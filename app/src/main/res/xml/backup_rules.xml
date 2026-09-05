@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Nothing to exclude yet; DataStore-held tokens are added here once
+         Phase 1 introduces them, matching how the reference app scopes this. -->
+</full-backup-content>

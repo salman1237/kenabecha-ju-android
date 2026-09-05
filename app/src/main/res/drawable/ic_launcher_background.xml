@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder until the real brand mark is generated (matching the
+     reference app's own Phase 1 to later "real launcher icon" progression).
+     Solid emerald, the web app's primary token. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#059669" />
+</shape>

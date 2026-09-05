@@ -1,0 +1,8 @@
+<resources>
+    <!-- Bridges the web app's real light-mode background/primary tokens
+         (frontend/app/globals.css) into the one place a plain Android
+         resource (the launch window background) needs a color before
+         Compose has drawn its first frame. Everything else uses ui/theme. -->
+    <color name="kb_background">#FFFFFF</color>
+    <color name="kb_primary">#059669</color>
+</resources>

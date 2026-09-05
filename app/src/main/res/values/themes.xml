@@ -1,0 +1,9 @@
+<resources>
+    <!-- Compose owns all real theming (see ui/theme/Theme.kt); this is only
+         the launch-time window background, shown for the instant before the
+         first Compose frame draws. -->
+    <style name="Theme.KenaBecha" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/kb_background</item>
+        <item name="android:statusBarColor">@color/kb_background</item>
+    </style>
+</resources>

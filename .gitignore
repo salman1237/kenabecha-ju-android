@@ -1,0 +1,18 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Signing material never belongs in the repo.
+*.keystore
+*.jks
+keystore.properties
+
+# Firebase project config — added when Phase 4's push notifications land.
+app/google-services.json
