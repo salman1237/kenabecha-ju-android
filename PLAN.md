@@ -151,6 +151,16 @@ Ratings: `GET /listings/{id}/rating-eligibility` renders a "Rate this transactio
 
 Reports: a shared `ReportDialog` (reason dropdown + optional note, same six `ReportReason` values across every target type) is wired into `ListingDetailScreen`, `ShopStorefrontScreen`, and `PublicProfileScreen` via one `RatingRepository.report(targetType, targetId, ...)` call — listings/shops/users all report through the identical `POST /reports` endpoint the plan describes.
 
+**Live on-device audit (2026-09-06)** — the device reconnected and every "compiled but NOT yet device-verified" caveat above for Phases 2c–6 is now resolved: real accounts, real backend calls, real bugs found and fixed rather than assumed clean from a compile pass alone. Found and fixed:
+
+- Every uploaded/stored image failed to render app-wide — the backend returns relative media paths (only resolvable by web's same-origin rewrite), and Coil has no page-origin context to resolve them against. Added `mediaUrl()` (`ui/common/MediaUrl.kt`), applied at all 21 `AsyncImage` call sites across 15 files.
+- Create Listing / Create Shop opened in "edit" mode for a brand-new item — navigating with the raw route-template constant sent the literal unsubstituted `"{listingId}"`/`"{shopId}"` text as the nav arg instead of leaving it absent. Added dedicated bare-path routes for the create case.
+- `ShopStorefrontViewModel`/`ChatThreadViewModel` shared one `error` field between the initial-load gate and a secondary action (follow-toggle, message send) — a single failed follow or send blanked the entire already-loaded screen. Split into separate `followError`/`sendError` fields rendered inline.
+- Nine screens (Dashboard, My Shops, My Shop Posts, Notifications, Inbox, Saved Listings, My Listings, Posts Feed, Shop Storefront) only refreshed data from the ViewModel's `init` block, which doesn't re-run when navigating back to a screen still alive in the nav back stack — caught live when a newly created shop post didn't appear in its own list until the whole app was relaunched. Added an explicit refresh on screen re-entry to all nine, plus `AccountSettingsScreen` (stale JU-verification status after Complete Profile) from the same cause.
+- Three `LazyVerticalGrid`s with a hardcoded height guess, nested inside a scrollable `Column` (Dashboard's stats tiles, a post's linked-listings grid, a shop storefront's listings grid), silently clipped whichever row didn't fit — caught live (a stat tile's label and a listing card's shop-name line were both cut off). Replaced all three with plain `Column`/`Row` layouts sized to actual content.
+
+Everything above is now genuinely device-verified, not just compiled: Google Sign-In end-to-end, My Listings' Relist action, the full Create Listing flow including photo upload, Create Shop, Shop Post create/edit/delete with real moderation-status display, the public Posts feed and post detail (including linked listings), a shop storefront's listings/posts/reviews sections, and Notifications' mark-all-read.
+
 ---
 
 ## Phase 7 — Bilingual, branding & release
