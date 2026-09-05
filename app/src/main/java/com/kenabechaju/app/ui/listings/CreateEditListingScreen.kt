@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.CategoryDto
+import com.kenabechaju.app.data.remote.dto.ShopDto
 import com.kenabechaju.app.ui.common.LabeledDropdown
 
 private val PRICE_TYPES = listOf("fixed" to "Fixed", "negotiable" to "Negotiable", "free" to "Free")
@@ -100,6 +101,18 @@ fun CreateEditListingScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
+
+            if (!state.isEditing && state.myShops.isNotEmpty()) {
+                LabeledDropdown(
+                    label = "Sell as",
+                    options = listOf<ShopDto?>(null) + state.myShops,
+                    selected = state.myShops.find { it.id == state.shopId },
+                    optionLabel = { it?.shopName ?: "Personal listing" },
+                    onSelect = { shop -> viewModel.update { it.copy(shopId = shop?.id) } },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(10.dp))
+            }
 
             LabeledDropdown(
                 label = "Price type",

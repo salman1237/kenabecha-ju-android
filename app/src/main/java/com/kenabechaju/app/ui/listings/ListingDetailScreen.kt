@@ -59,6 +59,7 @@ fun ListingDetailScreen(
     onBack: () -> Unit,
     onRelatedClick: (String) -> Unit,
     onSellerClick: (String) -> Unit,
+    onShopClick: (String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -163,7 +164,11 @@ fun ListingDetailScreen(
 
                         SellerRow(
                             listing = listing,
-                            onClick = if (listing.shop == null) ({ onSellerClick(listing.seller.id) }) else null,
+                            onClick = if (listing.shop != null) {
+                                { onShopClick(listing.shop.slug) }
+                            } else {
+                                { onSellerClick(listing.seller.id) }
+                            },
                         )
 
                         if (listing.seller.phone != null || listing.seller.whatsappNumber != null) {

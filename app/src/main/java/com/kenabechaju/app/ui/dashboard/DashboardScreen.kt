@@ -41,6 +41,7 @@ fun DashboardScreen(
     onBack: () -> Unit,
     onSavedListings: () -> Unit,
     onListingClick: (String) -> Unit,
+    onMyShops: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -105,6 +106,9 @@ fun DashboardScreen(
 
                     TextButton(onClick = onSavedListings, modifier = Modifier.padding(top = 16.dp)) {
                         Text("View saved listings (${stats.savedCount})")
+                    }
+                    TextButton(onClick = onMyShops) {
+                        Text("Manage my shops (${stats.shops})")
                     }
 
                     if (state.recentListings.isNotEmpty()) {

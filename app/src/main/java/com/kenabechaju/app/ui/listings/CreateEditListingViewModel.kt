@@ -7,8 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
 import com.kenabechaju.app.data.ListingFormInput
 import com.kenabechaju.app.data.ListingRepository
+import com.kenabechaju.app.data.ShopRepository
 import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.ListingImageDto
+import com.kenabechaju.app.data.remote.dto.ShopDto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +32,8 @@ data class CreateEditListingUiState(
     val categories: List<CategoryDto> = emptyList(),
     val categoryId: String? = null,
     val customCategory: String = "",
+    val myShops: List<ShopDto> = emptyList(),
+    val shopId: String? = null,
     val images: List<ListingImageDto> = emptyList(),
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
@@ -48,6 +52,7 @@ data class CreateEditListingUiState(
 @HiltViewModel
 class CreateEditListingViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
+    private val shopRepository: ShopRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
@@ -57,13 +62,27 @@ class CreateEditListingViewModel @Inject constructor(
 
     init {
         loadCategories()
-        _state.value.listingId?.let(::loadExisting)
+        val id = _state.value.listingId
+        if (id != null) {
+            loadExisting(id)
+        } else {
+            loadMyShops()
+        }
     }
 
     private fun loadCategories() {
         viewModelScope.launch {
             when (val result = listingRepository.categories()) {
                 is AuthResult.Success -> _state.value = _state.value.copy(categories = result.value)
+                is AuthResult.Failure -> Unit
+            }
+        }
+    }
+
+    private fun loadMyShops() {
+        viewModelScope.launch {
+            when (val result = shopRepository.myShops()) {
+                is AuthResult.Success -> _state.value = _state.value.copy(myShops = result.value)
                 is AuthResult.Failure -> Unit
             }
         }
@@ -114,6 +133,7 @@ class CreateEditListingViewModel @Inject constructor(
             pickupAddress = if (s.fulfillmentType == "delivery") null else s.pickupAddress.trim().ifBlank { null },
             categoryId = if (s.customCategory.isNotBlank()) null else s.categoryId,
             customCategory = s.customCategory.trim().ifBlank { null },
+            shopId = s.shopId,
         )
     }
 

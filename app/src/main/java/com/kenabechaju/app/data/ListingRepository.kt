@@ -29,6 +29,7 @@ data class BrowseFilters(
     val maxPrice: Int? = null,
     val condition: String? = null,
     val category: String? = null,
+    val shopId: String? = null,
     val sort: String = "newest",
     val limit: Int = 24,
     val offset: Int = 0,
@@ -38,6 +39,7 @@ data class BrowseFilters(
         minPrice?.let { put("min_price", it.toString()) }
         maxPrice?.let { put("max_price", it.toString()) }
         condition?.let { put("condition", it) }
+        shopId?.let { put("shop_id", it) }
         category?.let { put("category", it) }
         put("sort", sort)
         put("limit", limit.toString())
@@ -61,6 +63,9 @@ data class ListingFormInput(
     val pickupAddress: String?,
     val categoryId: String?,
     val customCategory: String?,
+    // Only meaningful on create — ListingUpdate has no shop_id field at all,
+    // a listing's shop association can't change after it's made.
+    val shopId: String? = null,
 )
 
 @Singleton
@@ -110,6 +115,7 @@ class ListingRepository @Inject constructor(
                 pickupAddress = input.pickupAddress,
                 categoryId = input.categoryId,
                 customCategory = input.customCategory,
+                shopId = input.shopId,
             )
         )
     }

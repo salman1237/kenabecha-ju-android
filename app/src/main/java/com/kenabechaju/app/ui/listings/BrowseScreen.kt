@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -60,6 +61,7 @@ fun BrowseScreen(
     onAccountClick: () -> Unit,
     onMyListingsClick: () -> Unit,
     onDashboardClick: () -> Unit,
+    onBrowseShopsClick: () -> Unit,
     viewModel: BrowseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -85,6 +87,9 @@ fun BrowseScreen(
             ) {
                 Text("KenaBecha JU", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold))
                 Row {
+                    androidx.compose.material3.IconButton(onClick = onBrowseShopsClick) {
+                        Icon(Icons.Outlined.Storefront, contentDescription = "Shops")
+                    }
                     androidx.compose.material3.IconButton(onClick = onDashboardClick) {
                         Icon(Icons.Filled.BarChart, contentDescription = "Dashboard")
                     }

@@ -103,6 +103,8 @@ Verified end-to-end on the physical device against local dev: real `GET /listing
 - Shop dashboard: branding edit (logo/cover upload), details edit, multiple-shops-per-seller list, per-shop "Add listing" and "Posts" entry points.
 - Browse shops screen (`GET /shops`, search/sort by name/rating/listing-count).
 
+**Shipped, compiled but NOT yet device-verified (2026-09-05)** — same open caveat as Phase 2c/2d, device still off USB: `ShopStorefrontScreen` (cover/logo/name/type/description, follow/unfollow, the stats row including the `rateable_listing` prompt — shown as text only, writing a review stays Phase 6 territory, same reasoning as deferring "Chat with seller" out of 2b — a listings grid via `BrowseFilters(shopId=..., sort="manual")`, a reviews list), `MyShopsScreen` + `CreateEditShopScreen` (one screen for POST/PATCH, logo/cover upload once the shop exists, delete with a confirm dialog — this one *does* get a confirm, unlike the listing/photo deletes elsewhere, since deleting a shop is a heavier, less-reversible action), and `BrowseShopsScreen` (`GET /shops`, client-side name search). Wired in: a listing's seller row now opens the shop storefront for shop-owned listings (previously inert); `CreateEditListingScreen` gained a "Sell as" dropdown (Personal vs. one of the seller's shops) shown only on create, matching the backend's own rule that a listing's shop association is fixed at creation (`ListingUpdate` has no `shop_id` field at all). Entry points: a new storefront icon on `BrowseScreen`, and "Manage my shops" on `DashboardScreen`. Not built: per-shop manual listing reorder (`POST /listings/reorder`) — the storefront reads the existing manual order fine, but there's no seller-side drag-to-reorder UI yet.
+
 ---
 
 ## Phase 4 — Shop posts

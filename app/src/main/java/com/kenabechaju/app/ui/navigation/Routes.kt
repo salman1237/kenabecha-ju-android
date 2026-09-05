@@ -17,9 +17,15 @@ object Routes {
     const val DASHBOARD = "dashboard"
     const val SAVED_LISTINGS = "saved_listings"
     const val PUBLIC_PROFILE = "profile/{userId}"
+    const val SHOP_STOREFRONT = "shop/{slug}"
+    const val BROWSE_SHOPS = "browse_shops"
+    const val MY_SHOPS = "my_shops"
+    const val SHOP_FORM = "shop_form?shopId={shopId}"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
     fun listingDetail(listingId: String) = "listing/$listingId"
     fun editListing(listingId: String) = "listing_form?listingId=$listingId"
     fun publicProfile(userId: String) = "profile/$userId"
+    fun shopStorefront(slug: String) = "shop/$slug"
+    fun editShop(shopId: String) = "shop_form?shopId=$shopId"
 }

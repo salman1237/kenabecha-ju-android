@@ -35,6 +35,10 @@ import com.kenabechaju.app.ui.listings.MyListingsScreen
 import com.kenabechaju.app.ui.profile.AccountSettingsScreen
 import com.kenabechaju.app.ui.profile.CompleteProfileScreen
 import com.kenabechaju.app.ui.profile.PublicProfileScreen
+import com.kenabechaju.app.ui.shops.BrowseShopsScreen
+import com.kenabechaju.app.ui.shops.CreateEditShopScreen
+import com.kenabechaju.app.ui.shops.MyShopsScreen
+import com.kenabechaju.app.ui.shops.ShopStorefrontScreen
 
 @Composable
 private fun StartupGate(authRepository: AuthRepository, onResolved: (loggedIn: Boolean) -> Unit) {
@@ -98,6 +102,38 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
                 onMyListingsClick = { navController.navigate(Routes.MY_LISTINGS) },
                 onDashboardClick = { navController.navigate(Routes.DASHBOARD) },
+                onBrowseShopsClick = { navController.navigate(Routes.BROWSE_SHOPS) },
+            )
+        }
+        composable(Routes.BROWSE_SHOPS) {
+            BrowseShopsScreen(
+                onBack = { navController.popBackStack() },
+                onShopClick = { slug -> navController.navigate(Routes.shopStorefront(slug)) },
+            )
+        }
+        composable(
+            route = Routes.SHOP_STOREFRONT,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType }),
+        ) {
+            ShopStorefrontScreen(
+                onBack = { navController.popBackStack() },
+                onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+            )
+        }
+        composable(Routes.MY_SHOPS) {
+            MyShopsScreen(
+                onBack = { navController.popBackStack() },
+                onCreateShop = { navController.navigate(Routes.SHOP_FORM) },
+                onEditShop = { id -> navController.navigate(Routes.editShop(id)) },
+            )
+        }
+        composable(
+            route = Routes.SHOP_FORM,
+            arguments = listOf(navArgument("shopId") { type = NavType.StringType; nullable = true; defaultValue = null }),
+        ) {
+            CreateEditShopScreen(
+                onBack = { navController.popBackStack() },
+                onDeleted = { navController.popBackStack() },
             )
         }
         composable(Routes.DASHBOARD) {
@@ -105,6 +141,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onBack = { navController.popBackStack() },
                 onSavedListings = { navController.navigate(Routes.SAVED_LISTINGS) },
                 onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onMyShops = { navController.navigate(Routes.MY_SHOPS) },
             )
         }
         composable(Routes.SAVED_LISTINGS) {
@@ -154,6 +191,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                     navController.navigate(Routes.listingDetail(id))
                 },
                 onSellerClick = { userId -> navController.navigate(Routes.publicProfile(userId)) },
+                onShopClick = { slug -> navController.navigate(Routes.shopStorefront(slug)) },
             )
         }
     }

@@ -13,10 +13,16 @@ import com.kenabechaju.app.data.remote.dto.ListingImageDto
 import com.kenabechaju.app.data.remote.dto.ListingUpdateRequestDto
 import com.kenabechaju.app.data.remote.dto.LoginRequestDto
 import com.kenabechaju.app.data.remote.dto.PageDto
+import com.kenabechaju.app.data.remote.dto.FollowToggleDto
+import com.kenabechaju.app.data.remote.dto.RatingDto
 import com.kenabechaju.app.data.remote.dto.ResendOtpRequestDto
 import com.kenabechaju.app.data.remote.dto.ResetPasswordRequestDto
 import com.kenabechaju.app.data.remote.dto.SavedToggleDto
 import com.kenabechaju.app.data.remote.dto.SessionOptionDto
+import com.kenabechaju.app.data.remote.dto.ShopCreateRequestDto
+import com.kenabechaju.app.data.remote.dto.ShopDto
+import com.kenabechaju.app.data.remote.dto.ShopStatsDto
+import com.kenabechaju.app.data.remote.dto.ShopUpdateRequestDto
 import com.kenabechaju.app.data.remote.dto.SignupRequestDto
 import com.kenabechaju.app.data.remote.dto.TagDto
 import com.kenabechaju.app.data.remote.dto.TokenResponseDto
@@ -166,4 +172,39 @@ interface ApiService {
 
     @GET("users/{id}")
     suspend fun getUserProfile(@Path("id") id: String): UserProfileDto
+
+    @POST("shops")
+    suspend fun createShop(@Body body: ShopCreateRequestDto): ShopDto
+
+    @GET("shops")
+    suspend fun listShops(@Query("skip") skip: Int = 0, @Query("limit") limit: Int = 50): List<ShopDto>
+
+    @GET("shops/mine")
+    suspend fun listMyShops(): List<ShopDto>
+
+    @GET("shops/{slug}")
+    suspend fun getShop(@Path("slug") slug: String): ShopDto
+
+    @GET("shops/{slug}/stats")
+    suspend fun getShopStats(@Path("slug") slug: String): ShopStatsDto
+
+    @POST("shops/{shopId}/follow")
+    suspend fun toggleFollowShop(@Path("shopId") shopId: String): FollowToggleDto
+
+    @GET("shops/{slug}/reviews")
+    suspend fun getShopReviews(@Path("slug") slug: String): List<RatingDto>
+
+    @retrofit2.http.PATCH("shops/{shopId}")
+    suspend fun updateShop(@Path("shopId") shopId: String, @Body body: ShopUpdateRequestDto): ShopDto
+
+    @Multipart
+    @POST("shops/{shopId}/logo")
+    suspend fun uploadShopLogo(@Path("shopId") shopId: String, @Part file: MultipartBody.Part): ShopDto
+
+    @Multipart
+    @POST("shops/{shopId}/cover")
+    suspend fun uploadShopCover(@Path("shopId") shopId: String, @Part file: MultipartBody.Part): ShopDto
+
+    @retrofit2.http.DELETE("shops/{shopId}")
+    suspend fun deleteShop(@Path("shopId") shopId: String)
 }
