@@ -2,6 +2,7 @@ package com.kenabechaju.app.ui.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -115,6 +116,19 @@ fun LoginScreen(
             }
             Text(if (state.isLoading) "Logging in…" else "Log in")
         }
+
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 16.dp)) {
+            androidx.compose.material3.HorizontalDivider(modifier = Modifier.weight(1f))
+            Text(
+                "or",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 12.dp),
+            )
+            androidx.compose.material3.HorizontalDivider(modifier = Modifier.weight(1f))
+        }
+
+        GoogleSignInButton(onResult = viewModel::onGoogleResult, enabled = !state.isLoading)
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

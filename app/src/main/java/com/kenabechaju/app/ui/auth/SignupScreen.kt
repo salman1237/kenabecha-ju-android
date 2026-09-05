@@ -32,6 +32,7 @@ import com.kenabechaju.app.ui.common.LabeledDropdown
 @Composable
 fun SignupScreen(
     onSignedUp: (email: String) -> Unit,
+    onGoogleSignedIn: () -> Unit,
     onGoToLogin: () -> Unit,
     viewModel: SignupViewModel = hiltViewModel(),
 ) {
@@ -39,6 +40,9 @@ fun SignupScreen(
 
     LaunchedEffect(state.signedUpEmail) {
         state.signedUpEmail?.let(onSignedUp)
+    }
+    LaunchedEffect(state.googleSignedIn) {
+        if (state.googleSignedIn) onGoogleSignedIn()
     }
 
     Column(
@@ -56,8 +60,27 @@ fun SignupScreen(
         )
 
         if (!state.showFullForm) {
+            GoogleSignInButton(onResult = viewModel::onGoogleResult, enabled = !state.isLoading)
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.padding(vertical = 16.dp)) {
+                androidx.compose.material3.HorizontalDivider(modifier = Modifier.weight(1f))
+                Text(
+                    "or",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                androidx.compose.material3.HorizontalDivider(modifier = Modifier.weight(1f))
+            }
             Button(onClick = viewModel::showFullForm, modifier = Modifier.fillMaxWidth()) {
                 Text("Sign up with full JU details")
+            }
+            state.error?.let {
+                Text(
+                    it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
             }
         } else {
             OutlinedTextField(

@@ -33,6 +33,7 @@ data class SignupUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val signedUpEmail: String? = null,
+    val googleSignedIn: Boolean = false,
 ) {
     val batch: Int? get() = sessions.find { it.session == session }?.batch
 }
@@ -91,6 +92,23 @@ class SignupViewModel @Inject constructor(
             _state.value = when (result) {
                 is AuthResult.Success -> _state.value.copy(isLoading = false, signedUpEmail = result.value.email)
                 is AuthResult.Failure -> _state.value.copy(isLoading = false, error = result.error.message)
+            }
+        }
+    }
+
+    fun onGoogleResult(result: GoogleSignInResult) {
+        when (result) {
+            is GoogleSignInResult.Cancelled -> Unit
+            is GoogleSignInResult.Failure -> _state.value = _state.value.copy(error = result.message)
+            is GoogleSignInResult.Success -> {
+                _state.value = _state.value.copy(isLoading = true, error = null)
+                viewModelScope.launch {
+                    when (val authResult = authRepository.googleLogin(result.idToken)) {
+                        is AuthResult.Success -> _state.value = _state.value.copy(isLoading = false, googleSignedIn = true)
+                        is AuthResult.Failure -> _state.value =
+                            _state.value.copy(isLoading = false, error = authResult.error.message)
+                    }
+                }
             }
         }
     }

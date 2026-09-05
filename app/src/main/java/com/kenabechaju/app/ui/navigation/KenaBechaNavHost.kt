@@ -69,6 +69,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         composable(Routes.SIGNUP) {
             SignupScreen(
                 onSignedUp = { email -> navController.navigate(Routes.otpVerify(email)) },
+                onGoogleSignedIn = { navController.navigate(Routes.HOME) { popUpTo(0) } },
                 onGoToLogin = { navController.popBackStack() },
             )
         }

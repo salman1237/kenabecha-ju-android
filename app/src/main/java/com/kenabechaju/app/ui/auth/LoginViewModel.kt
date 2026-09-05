@@ -47,4 +47,21 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
             }
         }
     }
+
+    fun onGoogleResult(result: GoogleSignInResult) {
+        when (result) {
+            is GoogleSignInResult.Cancelled -> Unit
+            is GoogleSignInResult.Failure -> _state.value = _state.value.copy(error = result.message)
+            is GoogleSignInResult.Success -> {
+                _state.value = _state.value.copy(isLoading = true, error = null)
+                viewModelScope.launch {
+                    when (val authResult = authRepository.googleLogin(result.idToken)) {
+                        is AuthResult.Success -> _state.value = _state.value.copy(isLoading = false, loggedIn = true)
+                        is AuthResult.Failure -> _state.value =
+                            _state.value.copy(isLoading = false, error = authResult.error.message)
+                    }
+                }
+            }
+        }
+    }
 }
