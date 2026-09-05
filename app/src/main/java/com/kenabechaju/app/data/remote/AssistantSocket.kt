@@ -20,8 +20,16 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 import javax.inject.Singleton
+
+// OkHttp's SocketTimeoutException.message is the bare word "timeout" —
+// technically accurate but meaningless to a user reading it in a chat
+// bubble. Everything else keeps its own IOException.message, which is
+// already reasonably descriptive (e.g. "Unable to resolve host").
+private fun IOException.toUserMessage(fallback: String): String =
+    if (this is SocketTimeoutException) "The assistant is taking longer than expected. Please try again." else message ?: fallback
 
 sealed interface AssistantEvent {
     data class Delta(val text: String) : AssistantEvent
@@ -52,7 +60,7 @@ class AssistantSocket @Inject constructor(private val okHttpClient: OkHttpClient
 
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                trySend(AssistantEvent.Error(e.message ?: "Network error"))
+                trySend(AssistantEvent.Error(e.toUserMessage("Network error")))
                 close()
             }
 
@@ -80,7 +88,7 @@ class AssistantSocket @Inject constructor(private val okHttpClient: OkHttpClient
                             }
                         }
                     } catch (e: IOException) {
-                        trySend(AssistantEvent.Error(e.message ?: "Stream error"))
+                        trySend(AssistantEvent.Error(e.toUserMessage("Stream error")))
                     } finally {
                         close()
                     }

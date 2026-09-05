@@ -14,6 +14,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -42,6 +43,16 @@ object NetworkModule {
             .addInterceptor(authInterceptor)
             .authenticator(tokenAuthenticator)
             .addInterceptor(logging)
+            // OkHttp's default 10s read timeout is too short for this
+            // client: it's shared with the assistant's SSE stream, whose
+            // first bytes can legitimately arrive well past 10s (a
+            // tool-call round trip — decide to search, run the DB query,
+            // then a second OpenAI call for the actual reply — yields zero
+            // SSE bytes the whole time). Confirmed live: a real request
+            // that succeeded server-side (real OpenAI 200, real listings
+            // found) still threw a client-side SocketTimeoutException
+            // ("timeout") because no bytes arrived within 10s.
+            .readTimeout(60, TimeUnit.SECONDS)
             .build()
     }
 
