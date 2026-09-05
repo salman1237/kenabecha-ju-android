@@ -45,6 +45,8 @@ fun AccountSettingsScreen(
     onBack: () -> Unit,
     onCompleteProfile: () -> Unit,
     onLoggedOut: () -> Unit,
+    onDashboard: () -> Unit,
+    onMyListings: () -> Unit,
     viewModel: AccountSettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -161,8 +163,20 @@ fun AccountSettingsScreen(
                 Text(if (state.isSaving) "Saving…" else "Save changes")
             }
             androidx.compose.material3.OutlinedButton(
-                onClick = viewModel::logout,
+                onClick = onDashboard,
                 modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+            ) {
+                Text("Dashboard")
+            }
+            androidx.compose.material3.OutlinedButton(
+                onClick = onMyListings,
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            ) {
+                Text("My listings")
+            }
+            androidx.compose.material3.OutlinedButton(
+                onClick = viewModel::logout,
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
             ) {
                 Text("Log out")
             }

@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
 import com.kenabechaju.app.data.BrowseFilters
 import com.kenabechaju.app.data.ListingRepository
+import com.kenabechaju.app.data.PostRepository
 import com.kenabechaju.app.data.ShopRepository
 import com.kenabechaju.app.data.remote.dto.ListingDto
+import com.kenabechaju.app.data.remote.dto.PostDto
 import com.kenabechaju.app.data.remote.dto.RatingDto
 import com.kenabechaju.app.data.remote.dto.ShopDto
 import com.kenabechaju.app.data.remote.dto.ShopStatsDto
@@ -23,6 +25,7 @@ data class ShopStorefrontUiState(
     val stats: ShopStatsDto? = null,
     val listings: List<ListingDto> = emptyList(),
     val reviews: List<RatingDto> = emptyList(),
+    val posts: List<PostDto> = emptyList(),
     val isLoading: Boolean = true,
     val isFollowLoading: Boolean = false,
     val error: String? = null,
@@ -36,6 +39,7 @@ data class ShopStorefrontUiState(
 class ShopStorefrontViewModel @Inject constructor(
     private val shopRepository: ShopRepository,
     private val listingRepository: ListingRepository,
+    private val postRepository: PostRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val slug: String = checkNotNull(savedStateHandle["slug"])
@@ -56,6 +60,7 @@ class ShopStorefrontViewModel @Inject constructor(
                     loadStats()
                     loadListings(result.value.id)
                     loadReviews()
+                    loadPosts(result.value.id)
                 }
                 is AuthResult.Failure -> _state.value = _state.value.copy(isLoading = false, error = result.error.message)
             }
@@ -84,6 +89,15 @@ class ShopStorefrontViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = shopRepository.getShopReviews(slug)) {
                 is AuthResult.Success -> _state.value = _state.value.copy(reviews = result.value)
+                is AuthResult.Failure -> Unit
+            }
+        }
+    }
+
+    private fun loadPosts(shopId: String) {
+        viewModelScope.launch {
+            when (val result = postRepository.shopPosts(shopId)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(posts = result.value)
                 is AuthResult.Failure -> Unit
             }
         }

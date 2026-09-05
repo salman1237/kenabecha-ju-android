@@ -21,6 +21,10 @@ object Routes {
     const val BROWSE_SHOPS = "browse_shops"
     const val MY_SHOPS = "my_shops"
     const val SHOP_FORM = "shop_form?shopId={shopId}"
+    const val POSTS_FEED = "posts_feed"
+    const val POST_DETAIL = "post/{slug}"
+    const val MY_SHOP_POSTS = "my_shop_posts/{shopId}"
+    const val POST_COMPOSER = "post_composer/{shopId}?postId={postId}"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
     fun listingDetail(listingId: String) = "listing/$listingId"
@@ -28,4 +32,8 @@ object Routes {
     fun publicProfile(userId: String) = "profile/$userId"
     fun shopStorefront(slug: String) = "shop/$slug"
     fun editShop(shopId: String) = "shop_form?shopId=$shopId"
+    fun postDetail(slug: String) = "post/$slug"
+    fun myShopPosts(shopId: String) = "my_shop_posts/$shopId"
+    fun createPost(shopId: String) = "post_composer/$shopId"
+    fun editPost(shopId: String, postId: String) = "post_composer/$shopId?postId=$postId"
 }

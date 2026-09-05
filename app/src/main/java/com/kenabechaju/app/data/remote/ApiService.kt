@@ -13,6 +13,10 @@ import com.kenabechaju.app.data.remote.dto.ListingImageDto
 import com.kenabechaju.app.data.remote.dto.ListingUpdateRequestDto
 import com.kenabechaju.app.data.remote.dto.LoginRequestDto
 import com.kenabechaju.app.data.remote.dto.PageDto
+import com.kenabechaju.app.data.remote.dto.PostCreateRequestDto
+import com.kenabechaju.app.data.remote.dto.PostDto
+import com.kenabechaju.app.data.remote.dto.PostImageDto
+import com.kenabechaju.app.data.remote.dto.PostUpdateRequestDto
 import com.kenabechaju.app.data.remote.dto.FollowToggleDto
 import com.kenabechaju.app.data.remote.dto.RatingDto
 import com.kenabechaju.app.data.remote.dto.ResendOtpRequestDto
@@ -207,4 +211,32 @@ interface ApiService {
 
     @retrofit2.http.DELETE("shops/{shopId}")
     suspend fun deleteShop(@Path("shopId") shopId: String)
+
+    @POST("posts")
+    suspend fun createPost(@Body body: PostCreateRequestDto): PostDto
+
+    @GET("posts/feed")
+    suspend fun getPostsFeed(@Query("limit") limit: Int = 24, @Query("offset") offset: Int = 0): PageDto<PostDto>
+
+    @GET("posts/shop/{shopId}")
+    suspend fun getShopPosts(@Path("shopId") shopId: String): List<PostDto>
+
+    @GET("posts/mine")
+    suspend fun getMyPosts(@Query("shop_id") shopId: String): List<PostDto>
+
+    @GET("posts/{slug}")
+    suspend fun getPostBySlug(@Path("slug") slug: String): PostDto
+
+    @retrofit2.http.PATCH("posts/{id}")
+    suspend fun updatePost(@Path("id") id: String, @Body body: PostUpdateRequestDto): PostDto
+
+    @retrofit2.http.DELETE("posts/{id}")
+    suspend fun deletePost(@Path("id") id: String)
+
+    @Multipart
+    @POST("posts/{id}/images")
+    suspend fun uploadPostImage(@Path("id") id: String, @Part file: MultipartBody.Part): PostImageDto
+
+    @retrofit2.http.DELETE("posts/{id}/images/{imageId}")
+    suspend fun deletePostImage(@Path("id") id: String, @Path("imageId") imageId: String)
 }

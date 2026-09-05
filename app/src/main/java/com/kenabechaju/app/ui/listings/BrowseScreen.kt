@@ -21,7 +21,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
@@ -59,9 +58,8 @@ private val SORT_OPTIONS = listOf(
 fun BrowseScreen(
     onListingClick: (String) -> Unit,
     onAccountClick: () -> Unit,
-    onMyListingsClick: () -> Unit,
-    onDashboardClick: () -> Unit,
     onBrowseShopsClick: () -> Unit,
+    onPostsClick: () -> Unit,
     viewModel: BrowseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -90,11 +88,8 @@ fun BrowseScreen(
                     androidx.compose.material3.IconButton(onClick = onBrowseShopsClick) {
                         Icon(Icons.Outlined.Storefront, contentDescription = "Shops")
                     }
-                    androidx.compose.material3.IconButton(onClick = onDashboardClick) {
-                        Icon(Icons.Filled.BarChart, contentDescription = "Dashboard")
-                    }
-                    androidx.compose.material3.IconButton(onClick = onMyListingsClick) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "My listings")
+                    androidx.compose.material3.IconButton(onClick = onPostsClick) {
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Posts")
                     }
                     androidx.compose.material3.IconButton(onClick = onAccountClick) {
                         Icon(Icons.Filled.AccountCircle, contentDescription = "Account")

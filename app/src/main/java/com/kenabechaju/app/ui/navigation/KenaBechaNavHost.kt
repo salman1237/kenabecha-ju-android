@@ -32,6 +32,10 @@ import com.kenabechaju.app.ui.listings.BrowseScreen
 import com.kenabechaju.app.ui.listings.CreateEditListingScreen
 import com.kenabechaju.app.ui.listings.ListingDetailScreen
 import com.kenabechaju.app.ui.listings.MyListingsScreen
+import com.kenabechaju.app.ui.posts.MyShopPostsScreen
+import com.kenabechaju.app.ui.posts.PostComposerScreen
+import com.kenabechaju.app.ui.posts.PostDetailScreen
+import com.kenabechaju.app.ui.posts.PostsFeedScreen
 import com.kenabechaju.app.ui.profile.AccountSettingsScreen
 import com.kenabechaju.app.ui.profile.CompleteProfileScreen
 import com.kenabechaju.app.ui.profile.PublicProfileScreen
@@ -100,10 +104,45 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
             BrowseScreen(
                 onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
                 onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
-                onMyListingsClick = { navController.navigate(Routes.MY_LISTINGS) },
-                onDashboardClick = { navController.navigate(Routes.DASHBOARD) },
                 onBrowseShopsClick = { navController.navigate(Routes.BROWSE_SHOPS) },
+                onPostsClick = { navController.navigate(Routes.POSTS_FEED) },
             )
+        }
+        composable(Routes.POSTS_FEED) {
+            PostsFeedScreen(
+                onBack = { navController.popBackStack() },
+                onPostClick = { slug -> navController.navigate(Routes.postDetail(slug)) },
+            )
+        }
+        composable(
+            route = Routes.POST_DETAIL,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType }),
+        ) {
+            PostDetailScreen(
+                onBack = { navController.popBackStack() },
+                onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onShopClick = { slug -> navController.navigate(Routes.shopStorefront(slug)) },
+            )
+        }
+        composable(
+            route = Routes.MY_SHOP_POSTS,
+            arguments = listOf(navArgument("shopId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val shopId = checkNotNull(backStackEntry.arguments?.getString("shopId"))
+            MyShopPostsScreen(
+                onBack = { navController.popBackStack() },
+                onCreatePost = { navController.navigate(Routes.createPost(shopId)) },
+                onEditPost = { postId -> navController.navigate(Routes.editPost(shopId, postId)) },
+            )
+        }
+        composable(
+            route = Routes.POST_COMPOSER,
+            arguments = listOf(
+                navArgument("shopId") { type = NavType.StringType },
+                navArgument("postId") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
+        ) {
+            PostComposerScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.BROWSE_SHOPS) {
             BrowseShopsScreen(
@@ -118,6 +157,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
             ShopStorefrontScreen(
                 onBack = { navController.popBackStack() },
                 onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onPostClick = { slug -> navController.navigate(Routes.postDetail(slug)) },
             )
         }
         composable(Routes.MY_SHOPS) {
@@ -125,6 +165,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onBack = { navController.popBackStack() },
                 onCreateShop = { navController.navigate(Routes.SHOP_FORM) },
                 onEditShop = { id -> navController.navigate(Routes.editShop(id)) },
+                onManagePosts = { id -> navController.navigate(Routes.myShopPosts(id)) },
             )
         }
         composable(
@@ -176,6 +217,8 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onLoggedOut = {
                     navController.navigate(Routes.LOGIN) { popUpTo(0) }
                 },
+                onDashboard = { navController.navigate(Routes.DASHBOARD) },
+                onMyListings = { navController.navigate(Routes.MY_LISTINGS) },
             )
         }
         composable(Routes.COMPLETE_PROFILE) {

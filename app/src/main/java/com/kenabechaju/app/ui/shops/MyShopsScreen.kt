@@ -44,6 +44,7 @@ fun MyShopsScreen(
     onBack: () -> Unit,
     onCreateShop: () -> Unit,
     onEditShop: (String) -> Unit,
+    onManagePosts: (String) -> Unit,
     viewModel: MyShopsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -78,7 +79,7 @@ fun MyShopsScreen(
                 }
                 else -> LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(state.shops, key = { it.id }) { shop ->
-                        ShopRow(shop, onClick = { onEditShop(shop.id) })
+                        ShopRow(shop, onClick = { onEditShop(shop.id) }, onManagePosts = { onManagePosts(shop.id) })
                     }
                 }
             }
@@ -87,7 +88,7 @@ fun MyShopsScreen(
 }
 
 @Composable
-private fun ShopRow(shop: ShopDto, onClick: () -> Unit) {
+private fun ShopRow(shop: ShopDto, onClick: () -> Unit, onManagePosts: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
@@ -103,13 +104,16 @@ private fun ShopRow(shop: ShopDto, onClick: () -> Unit) {
                     Icon(Icons.Outlined.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Column(modifier = Modifier.padding(start = 12.dp)) {
+            Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
                 Text(shop.shopName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
                 Text(
                     "${shop.listingCount} listings · ${shop.followerCount} followers",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            androidx.compose.material3.TextButton(onClick = onManagePosts) {
+                Text("Posts")
             }
         }
     }

@@ -36,5 +36,8 @@ fun statusLabel(status: String): String = when (status) {
     "removed" -> "Removed"
     "expired" -> "Expired"
     "paused" -> "Paused"
+    "pending" -> "Pending"
+    "published" -> "Published"
+    "rejected" -> "Rejected"
     else -> status
 }

@@ -51,6 +51,7 @@ import com.kenabechaju.app.ui.listings.ListingCard
 fun ShopStorefrontScreen(
     onBack: () -> Unit,
     onListingClick: (String) -> Unit,
+    onPostClick: (String) -> Unit,
     viewModel: ShopStorefrontViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -173,6 +174,23 @@ fun ShopStorefrontScreen(
                                     onToggleSaved = {},
                                     onClick = { onListingClick(listing.id) },
                                 )
+                            }
+                        }
+                    }
+
+                    if (state.posts.isNotEmpty()) {
+                        HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
+                        Text(
+                            "Posts",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.padding(16.dp),
+                        )
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            state.posts.forEach { post ->
+                                com.kenabechaju.app.ui.posts.PostCard(post = post, onClick = { onPostClick(post.slug) })
                             }
                         }
                     }
