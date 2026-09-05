@@ -58,6 +58,7 @@ import com.kenabechaju.app.ui.common.statusLabel
 fun ListingDetailScreen(
     onBack: () -> Unit,
     onRelatedClick: (String) -> Unit,
+    onSellerClick: (String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -160,7 +161,10 @@ fun ListingDetailScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-                        SellerRow(listing)
+                        SellerRow(
+                            listing = listing,
+                            onClick = if (listing.shop == null) ({ onSellerClick(listing.seller.id) }) else null,
+                        )
 
                         if (listing.seller.phone != null || listing.seller.whatsappNumber != null) {
                             Row(
@@ -296,8 +300,11 @@ private fun ImageGallery(listing: ListingDto) {
 }
 
 @Composable
-private fun SellerRow(listing: ListingDto) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+private fun SellerRow(listing: ListingDto, onClick: (() -> Unit)?) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+    ) {
         val imageUrl = listing.shop?.logoUrl ?: listing.seller.avatarUrl
         Box(
             modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),

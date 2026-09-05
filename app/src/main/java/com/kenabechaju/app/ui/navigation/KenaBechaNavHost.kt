@@ -26,12 +26,15 @@ import com.kenabechaju.app.ui.auth.ForgotPasswordScreen
 import com.kenabechaju.app.ui.auth.LoginScreen
 import com.kenabechaju.app.ui.auth.OtpVerifyScreen
 import com.kenabechaju.app.ui.auth.SignupScreen
+import com.kenabechaju.app.ui.dashboard.DashboardScreen
+import com.kenabechaju.app.ui.dashboard.SavedListingsScreen
 import com.kenabechaju.app.ui.listings.BrowseScreen
 import com.kenabechaju.app.ui.listings.CreateEditListingScreen
 import com.kenabechaju.app.ui.listings.ListingDetailScreen
 import com.kenabechaju.app.ui.listings.MyListingsScreen
 import com.kenabechaju.app.ui.profile.AccountSettingsScreen
 import com.kenabechaju.app.ui.profile.CompleteProfileScreen
+import com.kenabechaju.app.ui.profile.PublicProfileScreen
 
 @Composable
 private fun StartupGate(authRepository: AuthRepository, onResolved: (loggedIn: Boolean) -> Unit) {
@@ -94,7 +97,27 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
                 onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
                 onMyListingsClick = { navController.navigate(Routes.MY_LISTINGS) },
+                onDashboardClick = { navController.navigate(Routes.DASHBOARD) },
             )
+        }
+        composable(Routes.DASHBOARD) {
+            DashboardScreen(
+                onBack = { navController.popBackStack() },
+                onSavedListings = { navController.navigate(Routes.SAVED_LISTINGS) },
+                onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+            )
+        }
+        composable(Routes.SAVED_LISTINGS) {
+            SavedListingsScreen(
+                onBack = { navController.popBackStack() },
+                onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+            )
+        }
+        composable(
+            route = Routes.PUBLIC_PROFILE,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType }),
+        ) {
+            PublicProfileScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.MY_LISTINGS) {
             MyListingsScreen(
@@ -130,6 +153,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onRelatedClick = { id ->
                     navController.navigate(Routes.listingDetail(id))
                 },
+                onSellerClick = { userId -> navController.navigate(Routes.publicProfile(userId)) },
             )
         }
     }

@@ -2,6 +2,7 @@ package com.kenabechaju.app.data.remote
 
 import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.CompleteProfileRequestDto
+import com.kenabechaju.app.data.remote.dto.DashboardStatsDto
 import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.ForgotPasswordRequestDto
 import com.kenabechaju.app.data.remote.dto.GoogleLoginRequestDto
@@ -22,6 +23,7 @@ import com.kenabechaju.app.data.remote.dto.TokenResponseDto
 import com.kenabechaju.app.data.remote.dto.UpdateProfileRequestDto
 import com.kenabechaju.app.data.remote.dto.UpdateWhatsAppRequestDto
 import com.kenabechaju.app.data.remote.dto.UserDto
+import com.kenabechaju.app.data.remote.dto.UserProfileDto
 import com.kenabechaju.app.data.remote.dto.VerifyOtpRequestDto
 import okhttp3.MultipartBody
 import retrofit2.http.Body
@@ -155,4 +157,13 @@ interface ApiService {
 
     @retrofit2.http.DELETE("listings/{id}/images/{imageId}")
     suspend fun deleteListingImage(@Path("id") id: String, @Path("imageId") imageId: String)
+
+    @GET("dashboard/stats")
+    suspend fun getDashboardStats(): DashboardStatsDto
+
+    @GET("dashboard/saved")
+    suspend fun getSavedListings(): List<ListingDto>
+
+    @GET("users/{id}")
+    suspend fun getUserProfile(@Path("id") id: String): UserProfileDto
 }

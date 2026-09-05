@@ -14,8 +14,12 @@ object Routes {
     const val LISTING_DETAIL = "listing/{listingId}"
     const val MY_LISTINGS = "my_listings"
     const val LISTING_FORM = "listing_form?listingId={listingId}"
+    const val DASHBOARD = "dashboard"
+    const val SAVED_LISTINGS = "saved_listings"
+    const val PUBLIC_PROFILE = "profile/{userId}"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
     fun listingDetail(listingId: String) = "listing/$listingId"
     fun editListing(listingId: String) = "listing_form?listingId=$listingId"
+    fun publicProfile(userId: String) = "profile/$userId"
 }
