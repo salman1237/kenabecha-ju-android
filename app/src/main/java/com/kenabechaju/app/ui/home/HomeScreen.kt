@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun HomeScreen(
     onLoggedOut: () -> Unit,
+    onAccountSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -55,7 +56,13 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 24.dp),
                 )
-                OutlinedButton(onClick = viewModel::logout, modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = onAccountSettings, modifier = Modifier.fillMaxWidth()) {
+                    Text("Account settings")
+                }
+                OutlinedButton(
+                    onClick = viewModel::logout,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                ) {
                     Text("Log out")
                 }
             }

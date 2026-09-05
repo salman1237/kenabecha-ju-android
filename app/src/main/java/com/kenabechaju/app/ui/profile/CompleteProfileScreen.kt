@@ -1,0 +1,139 @@
+package com.kenabechaju.app.ui.profile
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kenabechaju.app.data.remote.dto.DepartmentDto
+import com.kenabechaju.app.data.remote.dto.HallDto
+import com.kenabechaju.app.data.remote.dto.SessionOptionDto
+import com.kenabechaju.app.ui.common.LabeledDropdown
+
+/** Reached from Account Settings by a Google-lite buyer who wants to sell —
+ *  mirrors get_seller's server-side requirement client-side, so the user is
+ *  routed here proactively instead of just being told "no" after the fact. */
+@Composable
+fun CompleteProfileScreen(
+    onCompleted: () -> Unit,
+    viewModel: CompleteProfileViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state.completed) {
+        if (state.completed) onCompleted()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+    ) {
+        Text("Complete your JU profile", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold))
+        Text(
+            "Selling needs your full JU details so buyers know who they're dealing with.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 20.dp),
+        )
+
+        OutlinedTextField(
+            value = state.phone,
+            onValueChange = { v -> viewModel.update { it.copy(phone = v) } },
+            label = { Text("Phone (e.g. 01712345678)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(
+                value = state.studentId,
+                onValueChange = { v -> viewModel.update { it.copy(studentId = v) } },
+                label = { Text("Student ID") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            )
+            OutlinedTextField(
+                value = state.registrationNo,
+                onValueChange = { v -> viewModel.update { it.copy(registrationNo = v) } },
+                label = { Text("Registration No") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().weight(1f),
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        LabeledDropdown(
+            label = "Hall",
+            options = state.halls,
+            selected = state.halls.find { it.id == state.hallId },
+            optionLabel = HallDto::name,
+            onSelect = { h -> viewModel.update { it.copy(hallId = h.id) } },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(12.dp))
+        LabeledDropdown(
+            label = "Department",
+            options = state.departments,
+            selected = state.departments.find { it.id == state.departmentId },
+            optionLabel = DepartmentDto::name,
+            onSelect = { d -> viewModel.update { it.copy(departmentId = d.id) } },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(12.dp))
+        LabeledDropdown(
+            label = "Session",
+            options = state.sessions,
+            selected = state.sessions.find { it.session == state.session },
+            optionLabel = SessionOptionDto::session,
+            onSelect = { s -> viewModel.update { it.copy(session = s.session) } },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        state.batch?.let {
+            Text(
+                "Batch $it",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+
+        state.error?.let {
+            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 12.dp))
+        }
+
+        Button(
+            onClick = viewModel::submit,
+            enabled = !state.isLoading,
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp).padding(end = 8.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp,
+                )
+            }
+            Text(if (state.isLoading) "Saving…" else "Complete profile")
+        }
+    }
+}

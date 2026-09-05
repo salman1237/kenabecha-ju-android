@@ -27,6 +27,8 @@ import com.kenabechaju.app.ui.auth.LoginScreen
 import com.kenabechaju.app.ui.auth.OtpVerifyScreen
 import com.kenabechaju.app.ui.auth.SignupScreen
 import com.kenabechaju.app.ui.home.HomeScreen
+import com.kenabechaju.app.ui.profile.AccountSettingsScreen
+import com.kenabechaju.app.ui.profile.CompleteProfileScreen
 
 @Composable
 private fun StartupGate(authRepository: AuthRepository, onResolved: (loggedIn: Boolean) -> Unit) {
@@ -88,7 +90,17 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onLoggedOut = {
                     navController.navigate(Routes.LOGIN) { popUpTo(0) }
                 },
+                onAccountSettings = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
             )
+        }
+        composable(Routes.ACCOUNT_SETTINGS) {
+            AccountSettingsScreen(
+                onBack = { navController.popBackStack() },
+                onCompleteProfile = { navController.navigate(Routes.COMPLETE_PROFILE) },
+            )
+        }
+        composable(Routes.COMPLETE_PROFILE) {
+            CompleteProfileScreen(onCompleted = { navController.popBackStack() })
         }
     }
 }

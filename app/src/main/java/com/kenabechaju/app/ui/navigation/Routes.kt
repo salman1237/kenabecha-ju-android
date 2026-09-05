@@ -9,6 +9,8 @@ object Routes {
     const val OTP_VERIFY = "otp_verify/{email}"
     const val FORGOT_PASSWORD = "forgot_password"
     const val HOME = "home"
+    const val ACCOUNT_SETTINGS = "account_settings"
+    const val COMPLETE_PROFILE = "complete_profile"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
 }

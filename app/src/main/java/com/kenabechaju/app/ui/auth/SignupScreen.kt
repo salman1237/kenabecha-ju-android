@@ -12,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -20,9 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,40 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.HallDto
 import com.kenabechaju.app.data.remote.dto.SessionOptionDto
-
-/**
- * A plain dropdown `Box` + `DropdownMenu`, not `ExposedDropdownMenuBox` for
- * the actual popup — sidesteps that component's `menuAnchor()` signature,
- * which has shifted across recent Compose BOM releases (a real, previously
- * hit instability on this exact toolchain, not a hypothetical).
- */
-@Composable
-private fun <T> LabeledDropdown(
-    label: String,
-    options: List<T>,
-    selected: T?,
-    optionLabel: (T) -> String,
-    onSelect: (T) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Column(modifier = modifier) {
-        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-            Text(selected?.let(optionLabel) ?: label)
-        }
-        androidx.compose.material3.DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                androidx.compose.material3.DropdownMenuItem(
-                    text = { Text(optionLabel(option)) },
-                    onClick = {
-                        onSelect(option)
-                        expanded = false
-                    },
-                )
-            }
-        }
-    }
-}
+import com.kenabechaju.app.ui.common.LabeledDropdown
 
 @Composable
 fun SignupScreen(

@@ -1,5 +1,7 @@
 package com.kenabechaju.app.data
 
+import android.content.Context
+import android.net.Uri
 import com.kenabechaju.app.data.remote.ApiFailure
 import com.kenabechaju.app.data.remote.ApiService
 import com.kenabechaju.app.data.remote.dto.CompleteProfileRequestDto
@@ -14,6 +16,10 @@ import com.kenabechaju.app.data.remote.dto.UpdateWhatsAppRequestDto
 import com.kenabechaju.app.data.remote.dto.UserDto
 import com.kenabechaju.app.data.remote.dto.VerifyOtpRequestDto
 import com.kenabechaju.app.data.remote.toApiFailure
+import dagger.hilt.android.qualifiers.ApplicationContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,6 +40,7 @@ private suspend fun <T> resultOf(block: suspend () -> T): AuthResult<T> = try {
 class AuthRepository @Inject constructor(
     private val api: ApiService,
     private val tokenStore: TokenStore,
+    @ApplicationContext private val context: Context,
 ) {
     suspend fun isLoggedIn(): Boolean = tokenStore.accessToken() != null
 
@@ -108,5 +115,15 @@ class AuthRepository @Inject constructor(
 
     suspend fun resetPassword(token: String, newPassword: String): AuthResult<Unit> = resultOf {
         api.resetPassword(ResetPasswordRequestDto(token, newPassword))
+    }
+
+    suspend fun updateAvatar(uri: Uri): AuthResult<UserDto> = resultOf {
+        val resolver = context.contentResolver
+        val mimeType = resolver.getType(uri) ?: "image/jpeg"
+        val bytes = resolver.openInputStream(uri)?.use { it.readBytes() }
+            ?: error("Could not read the selected image")
+        val body = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+        val part = MultipartBody.Part.createFormData("file", "avatar.jpg", body)
+        api.updateAvatar(part)
     }
 }

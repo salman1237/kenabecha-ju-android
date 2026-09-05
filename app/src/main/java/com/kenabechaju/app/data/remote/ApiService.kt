@@ -15,10 +15,13 @@ import com.kenabechaju.app.data.remote.dto.UpdateProfileRequestDto
 import com.kenabechaju.app.data.remote.dto.UpdateWhatsAppRequestDto
 import com.kenabechaju.app.data.remote.dto.UserDto
 import com.kenabechaju.app.data.remote.dto.VerifyOtpRequestDto
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 
 /**
  * Mirrors app/routers/auth.py and app/routers/reference.py 1:1 — same
@@ -70,6 +73,10 @@ interface ApiService {
 
     @retrofit2.http.PATCH("auth/profile")
     suspend fun updateProfile(@Body body: UpdateProfileRequestDto): UserDto
+
+    @Multipart
+    @POST("auth/avatar")
+    suspend fun updateAvatar(@Part file: MultipartBody.Part): UserDto
 
     @POST("auth/forgot-password")
     suspend fun forgotPassword(@Body body: ForgotPasswordRequestDto)
