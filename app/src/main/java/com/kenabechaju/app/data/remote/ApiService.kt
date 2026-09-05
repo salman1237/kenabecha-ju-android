@@ -6,6 +6,10 @@ import com.kenabechaju.app.data.remote.dto.ConversationDto
 import com.kenabechaju.app.data.remote.dto.MessageDto
 import com.kenabechaju.app.data.remote.dto.NotificationListDto
 import com.kenabechaju.app.data.remote.dto.NotificationDto
+import com.kenabechaju.app.data.remote.dto.RatingCreateRequestDto
+import com.kenabechaju.app.data.remote.dto.RatingDto
+import com.kenabechaju.app.data.remote.dto.RatingEligibilityDto
+import com.kenabechaju.app.data.remote.dto.ReportCreateRequestDto
 import com.kenabechaju.app.data.remote.dto.SendMessageRequestDto
 import com.kenabechaju.app.data.remote.dto.DashboardStatsDto
 import com.kenabechaju.app.data.remote.dto.DepartmentDto
@@ -23,7 +27,6 @@ import com.kenabechaju.app.data.remote.dto.PostDto
 import com.kenabechaju.app.data.remote.dto.PostImageDto
 import com.kenabechaju.app.data.remote.dto.PostUpdateRequestDto
 import com.kenabechaju.app.data.remote.dto.FollowToggleDto
-import com.kenabechaju.app.data.remote.dto.RatingDto
 import com.kenabechaju.app.data.remote.dto.ResendOtpRequestDto
 import com.kenabechaju.app.data.remote.dto.ResetPasswordRequestDto
 import com.kenabechaju.app.data.remote.dto.SavedToggleDto
@@ -283,4 +286,13 @@ interface ApiService {
 
     @POST("notifications/read-all")
     suspend fun markAllNotificationsRead()
+
+    @GET("listings/{listingId}/rating-eligibility")
+    suspend fun getRatingEligibility(@Path("listingId") listingId: String): RatingEligibilityDto
+
+    @POST("listings/{listingId}/ratings")
+    suspend fun createRating(@Path("listingId") listingId: String, @Body body: RatingCreateRequestDto): RatingDto
+
+    @POST("reports")
+    suspend fun createReport(@Body body: ReportCreateRequestDto)
 }

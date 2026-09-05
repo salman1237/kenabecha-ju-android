@@ -7,6 +7,7 @@ import com.kenabechaju.app.data.AuthResult
 import com.kenabechaju.app.data.BrowseFilters
 import com.kenabechaju.app.data.ListingRepository
 import com.kenabechaju.app.data.PostRepository
+import com.kenabechaju.app.data.RatingRepository
 import com.kenabechaju.app.data.ShopRepository
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import com.kenabechaju.app.data.remote.dto.PostDto
@@ -28,6 +29,9 @@ data class ShopStorefrontUiState(
     val posts: List<PostDto> = emptyList(),
     val isLoading: Boolean = true,
     val isFollowLoading: Boolean = false,
+    val isSubmittingReport: Boolean = false,
+    val reportSubmitted: Boolean = false,
+    val reportError: String? = null,
     val error: String? = null,
 )
 
@@ -40,6 +44,7 @@ class ShopStorefrontViewModel @Inject constructor(
     private val shopRepository: ShopRepository,
     private val listingRepository: ListingRepository,
     private val postRepository: PostRepository,
+    private val ratingRepository: RatingRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val slug: String = checkNotNull(savedStateHandle["slug"])
@@ -116,5 +121,20 @@ class ShopStorefrontViewModel @Inject constructor(
                 is AuthResult.Failure -> _state.value = _state.value.copy(isFollowLoading = false, error = result.error.message)
             }
         }
+    }
+
+    fun submitReport(reasonCode: String, note: String?) {
+        val shopId = _state.value.shop?.id ?: return
+        _state.value = _state.value.copy(isSubmittingReport = true, reportError = null)
+        viewModelScope.launch {
+            when (val result = ratingRepository.report("shop", shopId, reasonCode, note)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(isSubmittingReport = false, reportSubmitted = true)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isSubmittingReport = false, reportError = result.error.message)
+            }
+        }
+    }
+
+    fun dismissReportDialog() {
+        _state.value = _state.value.copy(reportSubmitted = false, reportError = null)
     }
 }

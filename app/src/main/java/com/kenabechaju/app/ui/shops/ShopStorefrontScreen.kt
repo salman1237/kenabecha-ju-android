@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,8 +35,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.RatingDto
+import com.kenabechaju.app.ui.common.ReportDialog
 import com.kenabechaju.app.ui.listings.ListingCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +61,22 @@ fun ShopStorefrontScreen(
     viewModel: ShopStorefrontViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    var showReportDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.reportSubmitted) {
+        if (state.reportSubmitted) {
+            showReportDialog = false
+            viewModel.dismissReportDialog()
+        }
+    }
+    if (showReportDialog) {
+        ReportDialog(
+            onDismiss = { showReportDialog = false },
+            onSubmit = viewModel::submitReport,
+            isSubmitting = state.isSubmittingReport,
+            error = state.reportError,
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -63,6 +85,11 @@ fun ShopStorefrontScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showReportDialog = true }) {
+                        Icon(Icons.Filled.Flag, contentDescription = "Report this shop")
                     }
                 },
             )

@@ -28,6 +28,7 @@ object Routes {
     const val INBOX = "inbox"
     const val CHAT_THREAD = "chat/{conversationId}"
     const val NOTIFICATIONS = "notifications"
+    const val ASSISTANT = "assistant"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
     fun chatThread(conversationId: String) = "chat/$conversationId"

@@ -32,6 +32,7 @@ import com.kenabechaju.app.ui.listings.BrowseScreen
 import com.kenabechaju.app.ui.listings.CreateEditListingScreen
 import com.kenabechaju.app.ui.listings.ListingDetailScreen
 import com.kenabechaju.app.ui.listings.MyListingsScreen
+import com.kenabechaju.app.ui.assistant.AssistantScreen
 import com.kenabechaju.app.ui.chat.ChatThreadScreen
 import com.kenabechaju.app.ui.chat.InboxScreen
 import com.kenabechaju.app.ui.notifications.NotificationsScreen
@@ -109,6 +110,13 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
                 onBrowseShopsClick = { navController.navigate(Routes.BROWSE_SHOPS) },
                 onPostsClick = { navController.navigate(Routes.POSTS_FEED) },
+                onAssistantClick = { navController.navigate(Routes.ASSISTANT) },
+            )
+        }
+        composable(Routes.ASSISTANT) {
+            AssistantScreen(
+                onBack = { navController.popBackStack() },
+                onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
             )
         }
         composable(Routes.POSTS_FEED) {

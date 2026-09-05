@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
 import com.kenabechaju.app.data.ChatRepository
 import com.kenabechaju.app.data.ListingRepository
+import com.kenabechaju.app.data.RatingRepository
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,13 @@ data class ListingDetailUiState(
     val isLoading: Boolean = true,
     val isContactingSeller: Boolean = false,
     val openConversationId: String? = null,
+    val canRate: Boolean = false,
+    val isSubmittingRating: Boolean = false,
+    val ratingSubmitted: Boolean = false,
+    val ratingError: String? = null,
+    val isSubmittingReport: Boolean = false,
+    val reportSubmitted: Boolean = false,
+    val reportError: String? = null,
     val error: String? = null,
 )
 
@@ -28,6 +36,7 @@ data class ListingDetailUiState(
 class ListingDetailViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
     private val chatRepository: ChatRepository,
+    private val ratingRepository: RatingRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val listingId: String = checkNotNull(savedStateHandle["listingId"])
@@ -47,6 +56,7 @@ class ListingDetailViewModel @Inject constructor(
                     _state.value = _state.value.copy(isLoading = false, listing = result.value)
                     loadSavedStatus()
                     loadRelated()
+                    loadRatingEligibility()
                 }
                 is AuthResult.Failure -> _state.value =
                     _state.value.copy(isLoading = false, error = result.error.message)
@@ -91,5 +101,42 @@ class ListingDetailViewModel @Inject constructor(
                 is AuthResult.Failure -> _state.value = _state.value.copy(isContactingSeller = false, error = result.error.message)
             }
         }
+    }
+
+    private fun loadRatingEligibility() {
+        viewModelScope.launch {
+            when (val result = ratingRepository.eligibility(listingId)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(canRate = result.value.canRate)
+                is AuthResult.Failure -> Unit
+            }
+        }
+    }
+
+    fun submitRating(stars: Int, reviewText: String?) {
+        _state.value = _state.value.copy(isSubmittingRating = true, ratingError = null)
+        viewModelScope.launch {
+            when (val result = ratingRepository.rate(listingId, stars, reviewText)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(isSubmittingRating = false, ratingSubmitted = true, canRate = false)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isSubmittingRating = false, ratingError = result.error.message)
+            }
+        }
+    }
+
+    fun dismissRatingDialog() {
+        _state.value = _state.value.copy(ratingSubmitted = false, ratingError = null)
+    }
+
+    fun submitReport(reasonCode: String, note: String?) {
+        _state.value = _state.value.copy(isSubmittingReport = true, reportError = null)
+        viewModelScope.launch {
+            when (val result = ratingRepository.report("listing", listingId, reasonCode, note)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(isSubmittingReport = false, reportSubmitted = true)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isSubmittingReport = false, reportError = result.error.message)
+            }
+        }
+    }
+
+    fun dismissReportDialog() {
+        _state.value = _state.value.copy(reportSubmitted = false, reportError = null)
     }
 }

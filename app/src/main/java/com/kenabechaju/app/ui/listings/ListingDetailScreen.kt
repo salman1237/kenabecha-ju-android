@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.Badge
@@ -41,6 +42,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.ListingDto
+import com.kenabechaju.app.ui.common.RateDialog
+import com.kenabechaju.app.ui.common.ReportDialog
 import com.kenabechaju.app.ui.common.conditionLabel
 import com.kenabechaju.app.ui.common.formatPrice
 import com.kenabechaju.app.ui.common.fulfillmentLabel
@@ -66,9 +72,40 @@ fun ListingDetailScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var showReportDialog by remember { mutableStateOf(false) }
+    var showRateDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.openConversationId) {
         state.openConversationId?.let(onOpenConversation)
+    }
+    LaunchedEffect(state.reportSubmitted) {
+        if (state.reportSubmitted) {
+            showReportDialog = false
+            viewModel.dismissReportDialog()
+        }
+    }
+    LaunchedEffect(state.ratingSubmitted) {
+        if (state.ratingSubmitted) {
+            showRateDialog = false
+            viewModel.dismissRatingDialog()
+        }
+    }
+
+    if (showReportDialog) {
+        ReportDialog(
+            onDismiss = { showReportDialog = false },
+            onSubmit = viewModel::submitReport,
+            isSubmitting = state.isSubmittingReport,
+            error = state.reportError,
+        )
+    }
+    if (showRateDialog) {
+        RateDialog(
+            onDismiss = { showRateDialog = false },
+            onSubmit = viewModel::submitRating,
+            isSubmitting = state.isSubmittingRating,
+            error = state.ratingError,
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -132,6 +169,14 @@ fun ListingDetailScreen(
                             if (listing.status != "active") {
                                 Badge { Text(statusLabel(listing.status)) }
                             }
+                            IconButton(onClick = { showReportDialog = true }, modifier = Modifier.size(28.dp)) {
+                                Icon(
+                                    Icons.Filled.Flag,
+                                    contentDescription = "Report this listing",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         }
 
                         Text(
@@ -183,6 +228,15 @@ fun ListingDetailScreen(
                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                         ) {
                             Text(if (state.isContactingSeller) "Opening chat…" else "Chat with seller")
+                        }
+
+                        if (state.canRate) {
+                            OutlinedButton(
+                                onClick = { showRateDialog = true },
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            ) {
+                                Text("Rate this transaction")
+                            }
                         }
 
                         if (listing.seller.phone != null || listing.seller.whatsappNumber != null) {

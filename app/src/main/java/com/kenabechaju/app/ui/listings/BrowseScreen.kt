@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
@@ -60,6 +62,7 @@ fun BrowseScreen(
     onAccountClick: () -> Unit,
     onBrowseShopsClick: () -> Unit,
     onPostsClick: () -> Unit,
+    onAssistantClick: () -> Unit,
     viewModel: BrowseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -76,6 +79,7 @@ fun BrowseScreen(
         if (shouldLoadMore) viewModel.loadMore()
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(
@@ -184,6 +188,13 @@ fun BrowseScreen(
                     }
                 }
             }
+        }
+    }
+        androidx.compose.material3.FloatingActionButton(
+            onClick = onAssistantClick,
+            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(20.dp),
+        ) {
+            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Ask KenaBecha")
         }
     }
 }

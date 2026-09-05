@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
 import com.kenabechaju.app.data.DashboardRepository
+import com.kenabechaju.app.data.RatingRepository
 import com.kenabechaju.app.data.remote.dto.UserProfileDto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,9 @@ import javax.inject.Inject
 data class PublicProfileUiState(
     val profile: UserProfileDto? = null,
     val isLoading: Boolean = true,
+    val isSubmittingReport: Boolean = false,
+    val reportSubmitted: Boolean = false,
+    val reportError: String? = null,
     val error: String? = null,
 )
 
@@ -24,6 +28,7 @@ data class PublicProfileUiState(
 @HiltViewModel
 class PublicProfileViewModel @Inject constructor(
     private val dashboardRepository: DashboardRepository,
+    private val ratingRepository: RatingRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val userId: String = checkNotNull(savedStateHandle["userId"])
@@ -43,5 +48,19 @@ class PublicProfileViewModel @Inject constructor(
                 is AuthResult.Failure -> _state.value.copy(isLoading = false, error = result.error.message)
             }
         }
+    }
+
+    fun submitReport(reasonCode: String, note: String?) {
+        _state.value = _state.value.copy(isSubmittingReport = true, reportError = null)
+        viewModelScope.launch {
+            when (val result = ratingRepository.report("user", userId, reasonCode, note)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(isSubmittingReport = false, reportSubmitted = true)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isSubmittingReport = false, reportError = result.error.message)
+            }
+        }
+    }
+
+    fun dismissReportDialog() {
+        _state.value = _state.value.copy(reportSubmitted = false, reportError = null)
     }
 }
