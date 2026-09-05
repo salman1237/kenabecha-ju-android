@@ -47,6 +47,8 @@ fun AccountSettingsScreen(
     onLoggedOut: () -> Unit,
     onDashboard: () -> Unit,
     onMyListings: () -> Unit,
+    onInbox: () -> Unit,
+    onNotifications: () -> Unit,
     viewModel: AccountSettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -173,6 +175,18 @@ fun AccountSettingsScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
             ) {
                 Text("My listings")
+            }
+            androidx.compose.material3.OutlinedButton(
+                onClick = onInbox,
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            ) {
+                Text("Inbox")
+            }
+            androidx.compose.material3.OutlinedButton(
+                onClick = onNotifications,
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            ) {
+                Text("Notifications")
             }
             androidx.compose.material3.OutlinedButton(
                 onClick = viewModel::logout,

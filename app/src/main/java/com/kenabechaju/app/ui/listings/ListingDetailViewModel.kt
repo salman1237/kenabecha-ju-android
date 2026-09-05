@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
+import com.kenabechaju.app.data.ChatRepository
 import com.kenabechaju.app.data.ListingRepository
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,12 +19,15 @@ data class ListingDetailUiState(
     val related: List<ListingDto> = emptyList(),
     val isSaved: Boolean = false,
     val isLoading: Boolean = true,
+    val isContactingSeller: Boolean = false,
+    val openConversationId: String? = null,
     val error: String? = null,
 )
 
 @HiltViewModel
 class ListingDetailViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
+    private val chatRepository: ChatRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val listingId: String = checkNotNull(savedStateHandle["listingId"])
@@ -75,6 +79,16 @@ class ListingDetailViewModel @Inject constructor(
             when (val result = listingRepository.toggleSaved(listingId)) {
                 is AuthResult.Success -> _state.value = _state.value.copy(isSaved = result.value)
                 is AuthResult.Failure -> _state.value = _state.value.copy(isSaved = previous)
+            }
+        }
+    }
+
+    fun contactSeller() {
+        _state.value = _state.value.copy(isContactingSeller = true, error = null)
+        viewModelScope.launch {
+            when (val result = chatRepository.contactSeller(listingId)) {
+                is AuthResult.Success -> _state.value = _state.value.copy(isContactingSeller = false, openConversationId = result.value.id)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isContactingSeller = false, error = result.error.message)
             }
         }
     }

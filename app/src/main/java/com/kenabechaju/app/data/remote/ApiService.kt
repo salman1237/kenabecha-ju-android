@@ -2,6 +2,11 @@ package com.kenabechaju.app.data.remote
 
 import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.CompleteProfileRequestDto
+import com.kenabechaju.app.data.remote.dto.ConversationDto
+import com.kenabechaju.app.data.remote.dto.MessageDto
+import com.kenabechaju.app.data.remote.dto.NotificationListDto
+import com.kenabechaju.app.data.remote.dto.NotificationDto
+import com.kenabechaju.app.data.remote.dto.SendMessageRequestDto
 import com.kenabechaju.app.data.remote.dto.DashboardStatsDto
 import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.ForgotPasswordRequestDto
@@ -239,4 +244,43 @@ interface ApiService {
 
     @retrofit2.http.DELETE("posts/{id}/images/{imageId}")
     suspend fun deletePostImage(@Path("id") id: String, @Path("imageId") imageId: String)
+
+    @POST("listings/{listingId}/contact")
+    suspend fun contactSeller(@Path("listingId") listingId: String): ConversationDto
+
+    @GET("conversations")
+    suspend fun listConversations(@Query("shop_id") shopId: String? = null): List<ConversationDto>
+
+    @GET("conversations/{id}")
+    suspend fun getConversation(@Path("id") id: String): ConversationDto
+
+    @GET("conversations/{id}/messages")
+    suspend fun getMessages(
+        @Path("id") id: String,
+        @Query("before") before: String? = null,
+        @Query("limit") limit: Int = 50,
+    ): List<MessageDto>
+
+    @POST("conversations/{id}/messages")
+    suspend fun sendMessage(@Path("id") id: String, @Body body: SendMessageRequestDto): MessageDto
+
+    @POST("conversations/{id}/read")
+    suspend fun markConversationRead(@Path("id") id: String)
+
+    @Multipart
+    @POST("conversations/{id}/attachments")
+    suspend fun sendAttachment(
+        @Path("id") id: String,
+        @Part file: MultipartBody.Part,
+        @Part("caption") caption: okhttp3.RequestBody,
+    ): MessageDto
+
+    @GET("notifications")
+    suspend fun getNotifications(): NotificationListDto
+
+    @POST("notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: String): NotificationDto
+
+    @POST("notifications/read-all")
+    suspend fun markAllNotificationsRead()
 }

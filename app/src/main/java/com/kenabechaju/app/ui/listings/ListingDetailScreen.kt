@@ -38,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -60,10 +61,15 @@ fun ListingDetailScreen(
     onRelatedClick: (String) -> Unit,
     onSellerClick: (String) -> Unit,
     onShopClick: (String) -> Unit,
+    onOpenConversation: (String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(state.openConversationId) {
+        state.openConversationId?.let(onOpenConversation)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
@@ -170,6 +176,14 @@ fun ListingDetailScreen(
                                 { onSellerClick(listing.seller.id) }
                             },
                         )
+
+                        Button(
+                            onClick = viewModel::contactSeller,
+                            enabled = !state.isContactingSeller,
+                            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                        ) {
+                            Text(if (state.isContactingSeller) "Opening chat…" else "Chat with seller")
+                        }
 
                         if (listing.seller.phone != null || listing.seller.whatsappNumber != null) {
                             Row(

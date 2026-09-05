@@ -32,6 +32,9 @@ import com.kenabechaju.app.ui.listings.BrowseScreen
 import com.kenabechaju.app.ui.listings.CreateEditListingScreen
 import com.kenabechaju.app.ui.listings.ListingDetailScreen
 import com.kenabechaju.app.ui.listings.MyListingsScreen
+import com.kenabechaju.app.ui.chat.ChatThreadScreen
+import com.kenabechaju.app.ui.chat.InboxScreen
+import com.kenabechaju.app.ui.notifications.NotificationsScreen
 import com.kenabechaju.app.ui.posts.MyShopPostsScreen
 import com.kenabechaju.app.ui.posts.PostComposerScreen
 import com.kenabechaju.app.ui.posts.PostDetailScreen
@@ -219,6 +222,8 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 },
                 onDashboard = { navController.navigate(Routes.DASHBOARD) },
                 onMyListings = { navController.navigate(Routes.MY_LISTINGS) },
+                onInbox = { navController.navigate(Routes.INBOX) },
+                onNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
             )
         }
         composable(Routes.COMPLETE_PROFILE) {
@@ -235,7 +240,23 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
                 },
                 onSellerClick = { userId -> navController.navigate(Routes.publicProfile(userId)) },
                 onShopClick = { slug -> navController.navigate(Routes.shopStorefront(slug)) },
+                onOpenConversation = { id -> navController.navigate(Routes.chatThread(id)) },
             )
+        }
+        composable(Routes.INBOX) {
+            InboxScreen(
+                onBack = { navController.popBackStack() },
+                onConversationClick = { id -> navController.navigate(Routes.chatThread(id)) },
+            )
+        }
+        composable(
+            route = Routes.CHAT_THREAD,
+            arguments = listOf(navArgument("conversationId") { type = NavType.StringType }),
+        ) {
+            ChatThreadScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.NOTIFICATIONS) {
+            NotificationsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -25,8 +25,12 @@ object Routes {
     const val POST_DETAIL = "post/{slug}"
     const val MY_SHOP_POSTS = "my_shop_posts/{shopId}"
     const val POST_COMPOSER = "post_composer/{shopId}?postId={postId}"
+    const val INBOX = "inbox"
+    const val CHAT_THREAD = "chat/{conversationId}"
+    const val NOTIFICATIONS = "notifications"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
+    fun chatThread(conversationId: String) = "chat/$conversationId"
     fun listingDetail(listingId: String) = "listing/$listingId"
     fun editListing(listingId: String) = "listing_form?listingId=$listingId"
     fun publicProfile(userId: String) = "profile/$userId"
