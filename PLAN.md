@@ -161,6 +161,13 @@ Reports: a shared `ReportDialog` (reason dropdown + optional note, same six `Rep
 
 Everything above is now genuinely device-verified, not just compiled: Google Sign-In end-to-end, My Listings' Relist action, the full Create Listing flow including photo upload, Create Shop, Shop Post create/edit/delete with real moderation-status display, the public Posts feed and post detail (including linked listings), a shop storefront's listings/posts/reviews sections, and Notifications' mark-all-read.
 
+**Second audit pass — real two-party chat and the AI assistant (2026-09-06)**:
+
+- Sent a real message from the seller account to a second, independent real account ("PW Buyer 660868") and confirmed end-to-end via the database directly (not just the sending device's own screen): correct `sender_id`/`receiver_id`, `read_at` still null on the receiving side, and a real `new_message` notification row created for the recipient.
+- The AI assistant returned a raw `"timeout"` error bubble on a query the backend actually answered successfully (confirmed via backend logs: real `200 OK` from OpenAI, a real listing found) — found the real bug rather than just retrying: OkHttp's default 10s read timeout on the shared client was too short for this endpoint's shape, since a tool-calling turn (decide to search, run the DB query) yields zero SSE bytes for its entire round trip before the second OpenAI call starts producing visible tokens. Fixed by raising the shared client's read timeout to 60s and mapping `SocketTimeoutException` to a real user-facing message instead of passing its bare `"timeout"` string through (`NetworkModule.kt`, `AssistantSocket.kt`). Re-tested live afterward: a real streamed reply correctly recommending an actual listing, rendered inline as a `ListingCard`.
+- Minor, not fixed: the assistant's replies can contain literal `**bold**` markdown asterisks in the rendered chat bubble, since the model isn't told to avoid markdown and the bubble is plain `Text`, not the same `parsePostHtml`-style rendering shop posts get. Cosmetic only — flagged for whenever it's worth a prompt tweak or a lightweight markdown-to-`AnnotatedString` pass.
+- Also note: the assistant is admin-gated (`site_settings.assistant.enabled`, defaulting to `false` in every environment) — it was off in local dev and had to be enabled directly in the database to run this test at all. That's a deliberate safe-default, not a bug, but worth knowing if the assistant ever appears "disabled" unexpectedly in a fresh environment.
+
 ---
 
 ## Phase 7 — Bilingual, branding & release
