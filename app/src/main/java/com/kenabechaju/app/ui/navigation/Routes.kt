@@ -11,6 +11,8 @@ object Routes {
     const val HOME = "home"
     const val ACCOUNT_SETTINGS = "account_settings"
     const val COMPLETE_PROFILE = "complete_profile"
+    const val LISTING_DETAIL = "listing/{listingId}"
 
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
+    fun listingDetail(listingId: String) = "listing/$listingId"
 }

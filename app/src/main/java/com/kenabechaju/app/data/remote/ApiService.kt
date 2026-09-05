@@ -1,15 +1,20 @@
 package com.kenabechaju.app.data.remote
 
+import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.CompleteProfileRequestDto
 import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.ForgotPasswordRequestDto
 import com.kenabechaju.app.data.remote.dto.GoogleLoginRequestDto
 import com.kenabechaju.app.data.remote.dto.HallDto
+import com.kenabechaju.app.data.remote.dto.ListingDto
 import com.kenabechaju.app.data.remote.dto.LoginRequestDto
+import com.kenabechaju.app.data.remote.dto.PageDto
 import com.kenabechaju.app.data.remote.dto.ResendOtpRequestDto
 import com.kenabechaju.app.data.remote.dto.ResetPasswordRequestDto
+import com.kenabechaju.app.data.remote.dto.SavedToggleDto
 import com.kenabechaju.app.data.remote.dto.SessionOptionDto
 import com.kenabechaju.app.data.remote.dto.SignupRequestDto
+import com.kenabechaju.app.data.remote.dto.TagDto
 import com.kenabechaju.app.data.remote.dto.TokenResponseDto
 import com.kenabechaju.app.data.remote.dto.UpdateProfileRequestDto
 import com.kenabechaju.app.data.remote.dto.UpdateWhatsAppRequestDto
@@ -22,6 +27,9 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 /**
  * Mirrors app/routers/auth.py and app/routers/reference.py 1:1 — same
@@ -83,4 +91,28 @@ interface ApiService {
 
     @POST("auth/reset-password")
     suspend fun resetPassword(@Body body: ResetPasswordRequestDto)
+
+    @GET("categories")
+    suspend fun getCategories(): List<CategoryDto>
+
+    @GET("tags/trending")
+    suspend fun getTrendingTags(): List<TagDto>
+
+    @GET("listings")
+    suspend fun browseListings(@QueryMap filters: Map<String, String>, @Query("tags") tags: List<String>): PageDto<ListingDto>
+
+    @GET("listings/suggestions")
+    suspend fun getSearchSuggestions(@Query("q") q: String, @Query("limit") limit: Int = 5): List<String>
+
+    @GET("listings/{id}")
+    suspend fun getListing(@Path("id") id: String): ListingDto
+
+    @GET("listings/{id}/related")
+    suspend fun getRelatedListings(@Path("id") id: String, @Query("limit") limit: Int = 8): List<ListingDto>
+
+    @GET("dashboard/saved/ids")
+    suspend fun getSavedIds(): List<String>
+
+    @POST("dashboard/saved/{listingId}")
+    suspend fun toggleSaved(@Path("listingId") listingId: String): SavedToggleDto
 }

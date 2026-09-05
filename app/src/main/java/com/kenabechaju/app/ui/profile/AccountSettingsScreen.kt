@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -27,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,9 +44,14 @@ import coil.compose.AsyncImage
 fun AccountSettingsScreen(
     onBack: () -> Unit,
     onCompleteProfile: () -> Unit,
+    onLoggedOut: () -> Unit,
     viewModel: AccountSettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state.loggedOut) {
+        if (state.loggedOut) onLoggedOut()
+    }
 
     val photoPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
@@ -53,6 +60,7 @@ fun AccountSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
@@ -151,6 +159,12 @@ fun AccountSettingsScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
             ) {
                 Text(if (state.isSaving) "Saving…" else "Save changes")
+            }
+            androidx.compose.material3.OutlinedButton(
+                onClick = viewModel::logout,
+                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+            ) {
+                Text("Log out")
             }
             TextButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)) {
                 Text("Back")

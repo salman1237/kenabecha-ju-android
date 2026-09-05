@@ -26,7 +26,8 @@ import com.kenabechaju.app.ui.auth.ForgotPasswordScreen
 import com.kenabechaju.app.ui.auth.LoginScreen
 import com.kenabechaju.app.ui.auth.OtpVerifyScreen
 import com.kenabechaju.app.ui.auth.SignupScreen
-import com.kenabechaju.app.ui.home.HomeScreen
+import com.kenabechaju.app.ui.listings.BrowseScreen
+import com.kenabechaju.app.ui.listings.ListingDetailScreen
 import com.kenabechaju.app.ui.profile.AccountSettingsScreen
 import com.kenabechaju.app.ui.profile.CompleteProfileScreen
 
@@ -87,21 +88,33 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
             ForgotPasswordScreen(onBackToLogin = { navController.popBackStack() })
         }
         composable(Routes.HOME) {
-            HomeScreen(
-                onLoggedOut = {
-                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
-                },
-                onAccountSettings = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
+            BrowseScreen(
+                onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
+                onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
             )
         }
         composable(Routes.ACCOUNT_SETTINGS) {
             AccountSettingsScreen(
                 onBack = { navController.popBackStack() },
                 onCompleteProfile = { navController.navigate(Routes.COMPLETE_PROFILE) },
+                onLoggedOut = {
+                    navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                },
             )
         }
         composable(Routes.COMPLETE_PROFILE) {
             CompleteProfileScreen(onCompleted = { navController.popBackStack() })
+        }
+        composable(
+            route = Routes.LISTING_DETAIL,
+            arguments = listOf(navArgument("listingId") { type = NavType.StringType }),
+        ) {
+            ListingDetailScreen(
+                onBack = { navController.popBackStack() },
+                onRelatedClick = { id ->
+                    navController.navigate(Routes.listingDetail(id))
+                },
+            )
         }
     }
 }

@@ -23,6 +23,7 @@ data class AccountSettingsUiState(
     val isUploadingPhoto: Boolean = false,
     val error: String? = null,
     val saved: Boolean = false,
+    val loggedOut: Boolean = false,
 )
 
 /** `dashboard/settings` on web, ported field for field: profile photo,
@@ -94,6 +95,13 @@ class AccountSettingsViewModel @Inject constructor(
                 is AuthResult.Success -> _state.value.copy(isUploadingPhoto = false, user = result.value)
                 is AuthResult.Failure -> _state.value.copy(isUploadingPhoto = false, error = result.error.message)
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _state.value = _state.value.copy(loggedOut = true)
         }
     }
 }
