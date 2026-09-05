@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kenabechaju.app.data.AuthRepository
+import com.kenabechaju.app.ui.auth.ForgotPasswordScreen
 import com.kenabechaju.app.ui.auth.LoginScreen
 import com.kenabechaju.app.ui.auth.OtpVerifyScreen
 import com.kenabechaju.app.ui.auth.SignupScreen
@@ -80,11 +81,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
             )
         }
         composable(Routes.FORGOT_PASSWORD) {
-            // Phase 1 follow-up — the request-reset screen itself.
-            androidx.compose.material3.Text(
-                "Forgot password — coming right after this screen set.",
-                modifier = Modifier.padding(24.dp),
-            )
+            ForgotPasswordScreen(onBackToLogin = { navController.popBackStack() })
         }
         composable(Routes.HOME) {
             HomeScreen(
