@@ -27,7 +27,9 @@ import com.kenabechaju.app.ui.auth.LoginScreen
 import com.kenabechaju.app.ui.auth.OtpVerifyScreen
 import com.kenabechaju.app.ui.auth.SignupScreen
 import com.kenabechaju.app.ui.listings.BrowseScreen
+import com.kenabechaju.app.ui.listings.CreateEditListingScreen
 import com.kenabechaju.app.ui.listings.ListingDetailScreen
+import com.kenabechaju.app.ui.listings.MyListingsScreen
 import com.kenabechaju.app.ui.profile.AccountSettingsScreen
 import com.kenabechaju.app.ui.profile.CompleteProfileScreen
 
@@ -91,7 +93,21 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
             BrowseScreen(
                 onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
                 onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
+                onMyListingsClick = { navController.navigate(Routes.MY_LISTINGS) },
             )
+        }
+        composable(Routes.MY_LISTINGS) {
+            MyListingsScreen(
+                onBack = { navController.popBackStack() },
+                onCreateListing = { navController.navigate(Routes.LISTING_FORM) },
+                onEditListing = { id -> navController.navigate(Routes.editListing(id)) },
+            )
+        }
+        composable(
+            route = Routes.LISTING_FORM,
+            arguments = listOf(navArgument("listingId") { type = NavType.StringType; nullable = true; defaultValue = null }),
+        ) {
+            CreateEditListingScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.ACCOUNT_SETTINGS) {
             AccountSettingsScreen(

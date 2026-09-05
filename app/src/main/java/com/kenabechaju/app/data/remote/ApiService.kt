@@ -6,7 +6,10 @@ import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.ForgotPasswordRequestDto
 import com.kenabechaju.app.data.remote.dto.GoogleLoginRequestDto
 import com.kenabechaju.app.data.remote.dto.HallDto
+import com.kenabechaju.app.data.remote.dto.ListingCreateRequestDto
 import com.kenabechaju.app.data.remote.dto.ListingDto
+import com.kenabechaju.app.data.remote.dto.ListingImageDto
+import com.kenabechaju.app.data.remote.dto.ListingUpdateRequestDto
 import com.kenabechaju.app.data.remote.dto.LoginRequestDto
 import com.kenabechaju.app.data.remote.dto.PageDto
 import com.kenabechaju.app.data.remote.dto.ResendOtpRequestDto
@@ -115,4 +118,41 @@ interface ApiService {
 
     @POST("dashboard/saved/{listingId}")
     suspend fun toggleSaved(@Path("listingId") listingId: String): SavedToggleDto
+
+    @GET("listings/mine")
+    suspend fun listMyListings(@Query("shop_id") shopId: String? = null): List<ListingDto>
+
+    @POST("listings")
+    suspend fun createListing(@Body body: ListingCreateRequestDto): ListingDto
+
+    @retrofit2.http.PATCH("listings/{id}")
+    suspend fun updateListing(@Path("id") id: String, @Body body: ListingUpdateRequestDto): ListingDto
+
+    @retrofit2.http.DELETE("listings/{id}")
+    suspend fun deleteListing(@Path("id") id: String)
+
+    @POST("listings/{id}/mark-sold")
+    suspend fun markSold(@Path("id") id: String): ListingDto
+
+    @POST("listings/{id}/mark-out-of-stock")
+    suspend fun markOutOfStock(@Path("id") id: String): ListingDto
+
+    @POST("listings/{id}/mark-available")
+    suspend fun markAvailable(@Path("id") id: String): ListingDto
+
+    @POST("listings/{id}/pause")
+    suspend fun pauseListing(@Path("id") id: String): ListingDto
+
+    @POST("listings/{id}/relist")
+    suspend fun relistListing(@Path("id") id: String): ListingDto
+
+    @POST("listings/{id}/renew")
+    suspend fun renewListing(@Path("id") id: String): ListingDto
+
+    @Multipart
+    @POST("listings/{id}/images")
+    suspend fun uploadListingImage(@Path("id") id: String, @Part file: MultipartBody.Part): ListingImageDto
+
+    @retrofit2.http.DELETE("listings/{id}/images/{imageId}")
+    suspend fun deleteListingImage(@Path("id") id: String, @Path("imageId") imageId: String)
 }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -56,6 +57,7 @@ private val SORT_OPTIONS = listOf(
 fun BrowseScreen(
     onListingClick: (String) -> Unit,
     onAccountClick: () -> Unit,
+    onMyListingsClick: () -> Unit,
     viewModel: BrowseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -80,8 +82,13 @@ fun BrowseScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("KenaBecha JU", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold))
-                androidx.compose.material3.IconButton(onClick = onAccountClick) {
-                    Icon(Icons.Filled.AccountCircle, contentDescription = "Account")
+                Row {
+                    androidx.compose.material3.IconButton(onClick = onMyListingsClick) {
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "My listings")
+                    }
+                    androidx.compose.material3.IconButton(onClick = onAccountClick) {
+                        Icon(Icons.Filled.AccountCircle, contentDescription = "Account")
+                    }
                 }
             }
 
