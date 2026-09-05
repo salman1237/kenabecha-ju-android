@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug source set only — never packaged into a release build. Android
+     blocks plain-HTTP traffic by default from API 28 on, even to
+     localhost, so the local dev backend needs an explicit exception here.
+     adb reverse tcp:8000 tcp:8000 makes that dev backend reachable at
+     localhost:8000 from the device exactly as if it ran on-device. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

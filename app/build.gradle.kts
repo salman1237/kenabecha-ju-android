@@ -23,10 +23,17 @@ android {
     }
 
     buildTypes {
+        debug {
+            // adb reverse tcp:8000 tcp:8000 — the same local dev stack the
+            // web app itself runs against, kept separate from production so
+            // test accounts never touch real data.
+            buildConfigField("String", "API_BASE_URL", "\"http://localhost:8000/\"")
+        }
         release {
             optimization {
                 enable = false
             }
+            buildConfigField("String", "API_BASE_URL", "\"https://api.kenabechaju.salmandev.io/\"")
         }
     }
     compileOptions {
@@ -35,6 +42,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
