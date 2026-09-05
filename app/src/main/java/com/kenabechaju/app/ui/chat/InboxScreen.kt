@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,6 +47,13 @@ fun InboxScreen(
     viewModel: InboxViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Same stale-on-return bug as AccountSettingsScreen / MyShopPostsScreen:
+    // the socket keeps previews/unread counts live while this screen's
+    // ViewModel is alive, but a thread's unread count only truly clears
+    // server-side after being read — refresh here to pick that up, plus
+    // any brand-new conversation started elsewhere.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
         topBar = {
@@ -90,7 +98,7 @@ private fun ConversationRow(convo: ConversationDto, onClick: () -> Unit) {
             ) {
                 val image = convo.listing.imageUrl
                 if (image != null) {
-                    AsyncImage(model = image, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(image), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                 } else {
                     Icon(Icons.Outlined.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

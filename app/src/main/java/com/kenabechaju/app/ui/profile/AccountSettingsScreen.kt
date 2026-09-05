@@ -53,6 +53,14 @@ fun AccountSettingsScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    // Refetches every time this screen is (re-)entered, including when
+    // popping back from CompleteProfileScreen — the ViewModel survives in
+    // the back stack entry's own store, so without this its JU-verification
+    // state would stay stale until the next full app relaunch.
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLoggedOut()
     }
@@ -87,7 +95,7 @@ fun AccountSettingsScreen(
                     CircularProgressIndicator(modifier = Modifier.size(28.dp))
                 } else if (state.user?.avatarUrl != null) {
                     AsyncImage(
-                        model = state.user!!.avatarUrl,
+                        model = com.kenabechaju.app.ui.common.mediaUrl(state.user!!.avatarUrl),
                         contentDescription = "Profile photo",
                         modifier = Modifier.fillMaxSize().clip(CircleShape),
                     )

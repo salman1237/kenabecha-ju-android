@@ -345,7 +345,7 @@ private fun ImageGallery(listing: ListingDto) {
     Column {
         HorizontalPager(state = pagerState) { page ->
             AsyncImage(
-                model = listing.images[page].imageUrl,
+                model = com.kenabechaju.app.ui.common.mediaUrl(listing.images[page].imageUrl),
                 contentDescription = listing.title,
                 modifier = Modifier.fillMaxWidth().aspectRatio(1f),
             )
@@ -384,7 +384,7 @@ private fun SellerRow(listing: ListingDto, onClick: (() -> Unit)?) {
             contentAlignment = Alignment.Center,
         ) {
             if (imageUrl != null) {
-                AsyncImage(model = imageUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(imageUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
             } else {
                 Text(
                     (listing.shop?.shopName ?: listing.seller.fullName).take(1).uppercase(),

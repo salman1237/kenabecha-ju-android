@@ -76,6 +76,14 @@ fun ChatThreadScreen(
         },
         bottomBar = {
             Column {
+                state.sendError?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                }
                 if (state.otherIsTyping) {
                     Text(
                         "Typing…",
@@ -118,7 +126,7 @@ fun ChatThreadScreen(
                 ) {
                     convo.listing.imageUrl?.let {
                         AsyncImage(
-                            model = it,
+                            model = com.kenabechaju.app.ui.common.mediaUrl(it),
                             contentDescription = null,
                             modifier = Modifier.size(40.dp).aspectRatio(1f).clip(RoundedCornerShape(8.dp)),
                         )
@@ -168,7 +176,7 @@ private fun MessageBubble(message: MessageDto, isMine: Boolean) {
         ) {
             message.imageUrl?.let {
                 AsyncImage(
-                    model = it,
+                    model = com.kenabechaju.app.ui.common.mediaUrl(it),
                     contentDescription = null,
                     modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).clip(RoundedCornerShape(8.dp)),
                 )

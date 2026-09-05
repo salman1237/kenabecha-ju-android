@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,6 +46,11 @@ fun MyShopPostsScreen(
     viewModel: MyShopPostsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    // ViewModel survives in its NavBackStackEntry's ViewModelStore, so
+    // init { refresh() } doesn't re-run on return from create/edit — same
+    // stale-list bug already found and fixed for AccountSettingsScreen.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
         topBar = {

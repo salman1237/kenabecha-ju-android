@@ -154,7 +154,7 @@ fun PostComposerScreen(
                     items(state.images, key = { it.id }) { image ->
                         Box(modifier = Modifier.size(80.dp)) {
                             AsyncImage(
-                                model = image.imageUrl,
+                                model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl),
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
                             )

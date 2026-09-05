@@ -54,7 +54,7 @@ fun ListingCard(
             val image = listing.images.firstOrNull()
             if (image != null) {
                 AsyncImage(
-                    model = image.imageUrl,
+                    model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl),
                     contentDescription = listing.title,
                     modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                 )

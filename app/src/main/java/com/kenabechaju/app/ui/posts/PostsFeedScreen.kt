@@ -51,6 +51,10 @@ fun PostsFeedScreen(
     LaunchedEffect(shouldLoadMore) {
         if (shouldLoadMore) viewModel.loadMore()
     }
+    // Same stale-on-return bug as AccountSettingsScreen / MyShopPostsScreen:
+    // the ViewModel survives in its NavBackStackEntry, so a newly approved
+    // post won't appear until the whole app relaunches without this.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
         topBar = {

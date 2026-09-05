@@ -31,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +58,11 @@ fun MyListingsScreen(
     viewModel: MyListingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Same stale-on-return bug as AccountSettingsScreen / MyShopPostsScreen:
+    // the ViewModel survives in its NavBackStackEntry, so a newly created
+    // or edited listing won't show here without an explicit refresh.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
         topBar = {
@@ -130,7 +136,7 @@ private fun MyListingRow(
             ) {
                 val image = listing.images.firstOrNull()
                 if (image != null) {
-                    AsyncImage(model = image.imageUrl, contentDescription = null, modifier = Modifier.fillMaxSize())
+                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl), contentDescription = null, modifier = Modifier.fillMaxSize())
                 } else {
                     Icon(Icons.Outlined.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

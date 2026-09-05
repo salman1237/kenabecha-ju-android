@@ -3,14 +3,10 @@ package com.kenabechaju.app.ui.dashboard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,6 +42,11 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Same stale-on-return bug as AccountSettingsScreen / MyShopPostsScreen:
+    // the ViewModel survives in its NavBackStackEntry, so stats/recent
+    // listings won't reflect a sale, new listing, etc. without a refresh.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
         topBar = {
@@ -74,25 +76,27 @@ fun DashboardScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                 ) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        modifier = Modifier.fillMaxWidth().height(220.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        userScrollEnabled = false,
-                    ) {
-                        items(
-                            listOf(
-                                "Active listings" to stats.activeListings.toString(),
-                                "Sold" to stats.soldListings.toString(),
-                                "Shops" to stats.shops.toString(),
-                                "Unread messages" to stats.unreadMessages.toString(),
-                                "Conversations" to stats.conversations.toString(),
-                                "Saved" to stats.savedCount.toString(),
-                            ),
-                        ) { (label, value) ->
-                            StatTile(label = label, value = value)
+                    // A plain Column of Rows, not LazyVerticalGrid: a lazy
+                    // grid nested inside a scrollable Column needs a bounded
+                    // height, and a hardcoded one silently clips whichever
+                    // row doesn't fit it — confirmed via a live on-device
+                    // test where the last row's labels were cut off. Six
+                    // fixed items never need lazy/virtualized rendering.
+                    listOf(
+                        "Active listings" to stats.activeListings.toString(),
+                        "Sold" to stats.soldListings.toString(),
+                        "Shops" to stats.shops.toString(),
+                        "Unread messages" to stats.unreadMessages.toString(),
+                        "Conversations" to stats.conversations.toString(),
+                        "Saved" to stats.savedCount.toString(),
+                    ).chunked(2).forEach { rowItems ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                        ) {
+                            rowItems.forEach { (label, value) ->
+                                StatTile(label = label, value = value, modifier = Modifier.weight(1f))
+                            }
                         }
                     }
 
@@ -117,20 +121,27 @@ fun DashboardScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
                         )
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            modifier = Modifier.fillMaxWidth().height(280.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            userScrollEnabled = false,
-                        ) {
-                            items(state.recentListings, key = { it.id }) { listing ->
-                                ListingCard(
-                                    listing = listing,
-                                    isSaved = false,
-                                    onToggleSaved = {},
-                                    onClick = { onListingClick(listing.id) },
-                                )
+                        state.recentListings.chunked(2).forEach { rowItems ->
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            ) {
+                                rowItems.forEach { listing ->
+                                    ListingCard(
+                                        listing = listing,
+                                        isSaved = false,
+                                        onToggleSaved = {},
+                                        onClick = { onListingClick(listing.id) },
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                                // An odd final row's single card should not
+                                // stretch to fill the row — a matching
+                                // invisible spacer keeps its width identical
+                                // to every other card instead.
+                                if (rowItems.size == 1) {
+                                    Box(modifier = Modifier.weight(1f))
+                                }
                             }
                         }
                     }

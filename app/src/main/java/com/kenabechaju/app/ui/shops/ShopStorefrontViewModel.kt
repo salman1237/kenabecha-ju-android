@@ -29,6 +29,7 @@ data class ShopStorefrontUiState(
     val posts: List<PostDto> = emptyList(),
     val isLoading: Boolean = true,
     val isFollowLoading: Boolean = false,
+    val followError: String? = null,
     val isSubmittingReport: Boolean = false,
     val reportSubmitted: Boolean = false,
     val reportError: String? = null,
@@ -111,14 +112,14 @@ class ShopStorefrontViewModel @Inject constructor(
     fun toggleFollow() {
         val shopId = _state.value.shop?.id ?: return
         val currentlyFollowing = _state.value.stats?.isFollowing ?: return
-        _state.value = _state.value.copy(isFollowLoading = true)
+        _state.value = _state.value.copy(isFollowLoading = true, followError = null)
         viewModelScope.launch {
             when (val result = shopRepository.toggleFollow(shopId)) {
                 is AuthResult.Success -> _state.value = _state.value.copy(
                     isFollowLoading = false,
                     stats = _state.value.stats?.copy(isFollowing = result.value),
                 )
-                is AuthResult.Failure -> _state.value = _state.value.copy(isFollowLoading = false, error = result.error.message)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isFollowLoading = false, followError = result.error.message)
             }
         }
     }

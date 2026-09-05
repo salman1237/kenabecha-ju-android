@@ -105,7 +105,7 @@ fun PublicProfileScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             if (profile.avatarUrl != null) {
-                                AsyncImage(model = profile.avatarUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(profile.avatarUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                             } else {
                                 Text(profile.fullName.take(1).uppercase(), style = MaterialTheme.typography.headlineSmall)
                             }

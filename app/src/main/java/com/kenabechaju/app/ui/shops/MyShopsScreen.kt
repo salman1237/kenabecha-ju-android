@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,6 +49,12 @@ fun MyShopsScreen(
     viewModel: MyShopsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Same stale-on-return bug as AccountSettingsScreen / MyShopPostsScreen:
+    // the ViewModel survives in its NavBackStackEntry, so a newly created
+    // shop won't show here without an explicit refresh — confirmed live
+    // for the identical bug in MyShopPostsScreen this same audit round.
+    LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
         topBar = {
@@ -99,7 +106,7 @@ private fun ShopRow(shop: ShopDto, onClick: () -> Unit, onManagePosts: () -> Uni
                 contentAlignment = Alignment.Center,
             ) {
                 if (shop.logoUrl != null) {
-                    AsyncImage(model = shop.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(shop.logoUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                 } else {
                     Icon(Icons.Outlined.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

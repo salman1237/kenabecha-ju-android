@@ -31,6 +31,12 @@ data class ChatThreadUiState(
     val isSending: Boolean = false,
     val isSendingAttachment: Boolean = false,
     val error: String? = null,
+    // Deliberately separate from `error` above: that field gates the
+    // initial load (blank screen vs. message list), so a failed *send*
+    // must not reuse it — doing so would replace the whole already-loaded
+    // conversation with just an error message, a real bug found via a
+    // live on-device test, not a hypothetical.
+    val sendError: String? = null,
 )
 
 @HiltViewModel
@@ -121,27 +127,27 @@ class ChatThreadViewModel @Inject constructor(
     fun send() {
         val text = _state.value.draft.trim()
         if (text.isEmpty()) return
-        _state.value = _state.value.copy(isSending = true, draft = "", error = null)
+        _state.value = _state.value.copy(isSending = true, draft = "", sendError = null)
         viewModelScope.launch {
             when (val result = chatRepository.sendMessage(conversationId, text)) {
                 is AuthResult.Success -> _state.value = _state.value.copy(
                     isSending = false,
                     messages = _state.value.messages + result.value,
                 )
-                is AuthResult.Failure -> _state.value = _state.value.copy(isSending = false, error = result.error.message, draft = text)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isSending = false, sendError = result.error.message, draft = text)
             }
         }
     }
 
     fun sendAttachment(uri: Uri) {
-        _state.value = _state.value.copy(isSendingAttachment = true, error = null)
+        _state.value = _state.value.copy(isSendingAttachment = true, sendError = null)
         viewModelScope.launch {
             when (val result = chatRepository.sendAttachment(conversationId, uri, "")) {
                 is AuthResult.Success -> _state.value = _state.value.copy(
                     isSendingAttachment = false,
                     messages = _state.value.messages + result.value,
                 )
-                is AuthResult.Failure -> _state.value = _state.value.copy(isSendingAttachment = false, error = result.error.message)
+                is AuthResult.Failure -> _state.value = _state.value.copy(isSendingAttachment = false, sendError = result.error.message)
             }
         }
     }

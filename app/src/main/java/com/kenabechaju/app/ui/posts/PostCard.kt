@@ -33,7 +33,7 @@ fun PostCard(post: PostDto, onClick: () -> Unit) {
         Column {
             post.images.firstOrNull()?.let { image ->
                 AsyncImage(
-                    model = image.imageUrl,
+                    model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl),
                     contentDescription = null,
                     modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                 )
@@ -45,7 +45,7 @@ fun PostCard(post: PostDto, onClick: () -> Unit) {
                         contentAlignment = Alignment.Center,
                     ) {
                         if (post.shop.logoUrl != null) {
-                            AsyncImage(model = post.shop.logoUrl, contentDescription = null, modifier = Modifier.size(24.dp).clip(CircleShape))
+                            AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(post.shop.logoUrl), contentDescription = null, modifier = Modifier.size(24.dp).clip(CircleShape))
                         } else {
                             Icon(
                                 Icons.Outlined.Storefront,

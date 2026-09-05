@@ -4,17 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -69,6 +64,10 @@ fun ShopStorefrontScreen(
             viewModel.dismissReportDialog()
         }
     }
+    // Same stale-on-return bug as AccountSettingsScreen / MyShopPostsScreen:
+    // the ViewModel survives in its NavBackStackEntry, so a newly created
+    // post/listing for this shop won't show here without an explicit refresh.
+    LaunchedEffect(Unit) { viewModel.refresh() }
     if (showReportDialog) {
         ReportDialog(
             onDismiss = { showReportDialog = false },
@@ -112,7 +111,7 @@ fun ShopStorefrontScreen(
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().aspectRatio(3f).background(MaterialTheme.colorScheme.surfaceVariant)) {
                         shop.coverUrl?.let {
-                            AsyncImage(model = it, contentDescription = null, modifier = Modifier.fillMaxSize())
+                            AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, modifier = Modifier.fillMaxSize())
                         }
                     }
 
@@ -123,7 +122,7 @@ fun ShopStorefrontScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 if (shop.logoUrl != null) {
-                                    AsyncImage(model = shop.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(shop.logoUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                                 } else {
                                     Icon(Icons.Outlined.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
@@ -142,6 +141,10 @@ fun ShopStorefrontScreen(
                                     Button(onClick = viewModel::toggleFollow, enabled = !state.isFollowLoading) { Text("Follow") }
                                 }
                             }
+                        }
+
+                        state.followError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
                         }
 
                         shop.description?.takeIf { it.isNotBlank() }?.let {
@@ -186,21 +189,33 @@ fun ShopStorefrontScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            modifier = Modifier.fillMaxWidth().height(((state.listings.size + 1) / 2 * 220).dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            userScrollEnabled = false,
-                        ) {
-                            items(state.listings, key = { it.id }) { listing ->
-                                ListingCard(
-                                    listing = listing,
-                                    isSaved = false,
-                                    onToggleSaved = {},
-                                    onClick = { onListingClick(listing.id) },
-                                )
+                        // A plain Column of Rows, not LazyVerticalGrid: a
+                        // lazy grid nested inside a scrollable Column needs
+                        // a bounded height, and a hardcoded guess silently
+                        // clips whichever row doesn't fit it — confirmed via
+                        // a live on-device test of the identical pattern in
+                        // PostDetailScreen (a card's shop-name line was cut
+                        // off), and already fixed the same way in
+                        // DashboardScreen.
+                        Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+                            state.listings.chunked(2).forEach { rowItems ->
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                                ) {
+                                    rowItems.forEach { listing ->
+                                        ListingCard(
+                                            listing = listing,
+                                            isSaved = false,
+                                            onToggleSaved = {},
+                                            onClick = { onListingClick(listing.id) },
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                    }
+                                    if (rowItems.size == 1) {
+                                        Box(modifier = Modifier.weight(1f))
+                                    }
+                                }
                             }
                         }
                     }

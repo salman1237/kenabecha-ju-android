@@ -5,17 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -92,7 +87,7 @@ fun PostDetailScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             if (post.shop.logoUrl != null) {
-                                AsyncImage(model = post.shop.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(post.shop.logoUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                             } else {
                                 Icon(Icons.Outlined.Storefront, contentDescription = null, modifier = Modifier.size(18.dp))
                             }
@@ -108,7 +103,7 @@ fun PostDetailScreen(
 
                     if (post.images.isNotEmpty()) {
                         AsyncImage(
-                            model = post.images.first().imageUrl,
+                            model = com.kenabechaju.app.ui.common.mediaUrl(post.images.first().imageUrl),
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -127,21 +122,30 @@ fun PostDetailScreen(
                     if (post.listings.isNotEmpty()) {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
                         Text("Linked listings", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            modifier = Modifier.fillMaxWidth().height(((post.listings.size + 1) / 2 * 220).dp),
-                            contentPadding = PaddingValues(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            userScrollEnabled = false,
-                        ) {
-                            items(post.listings, key = { it.id }) { listing ->
-                                ListingCard(
-                                    listing = listing,
-                                    isSaved = false,
-                                    onToggleSaved = {},
-                                    onClick = { onListingClick(listing.id) },
-                                )
+                        // A plain Column of Rows, not LazyVerticalGrid: a lazy
+                        // grid nested inside a scrollable Column needs a
+                        // bounded height, and a hardcoded guess silently
+                        // clips whichever row doesn't fit it — confirmed via
+                        // a live on-device test where a card's shop-name
+                        // line was cut off (same bug class already fixed in
+                        // DashboardScreen).
+                        post.listings.chunked(2).forEach { rowItems ->
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                            ) {
+                                rowItems.forEach { listing ->
+                                    ListingCard(
+                                        listing = listing,
+                                        isSaved = false,
+                                        onToggleSaved = {},
+                                        onClick = { onListingClick(listing.id) },
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                                if (rowItems.size == 1) {
+                                    Box(modifier = Modifier.weight(1f))
+                                }
                             }
                         }
                     }

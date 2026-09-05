@@ -174,7 +174,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         composable(Routes.MY_SHOPS) {
             MyShopsScreen(
                 onBack = { navController.popBackStack() },
-                onCreateShop = { navController.navigate(Routes.SHOP_FORM) },
+                onCreateShop = { navController.navigate(Routes.CREATE_SHOP) },
                 onEditShop = { id -> navController.navigate(Routes.editShop(id)) },
                 onManagePosts = { id -> navController.navigate(Routes.myShopPosts(id)) },
             )
@@ -211,7 +211,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         composable(Routes.MY_LISTINGS) {
             MyListingsScreen(
                 onBack = { navController.popBackStack() },
-                onCreateListing = { navController.navigate(Routes.LISTING_FORM) },
+                onCreateListing = { navController.navigate(Routes.CREATE_LISTING) },
                 onEditListing = { id -> navController.navigate(Routes.editListing(id)) },
             )
         }

@@ -97,7 +97,7 @@ private fun ShopListRow(shop: ShopDto, onClick: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) {
                 if (shop.logoUrl != null) {
-                    AsyncImage(model = shop.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(shop.logoUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                 } else {
                     Icon(Icons.Outlined.Storefront, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

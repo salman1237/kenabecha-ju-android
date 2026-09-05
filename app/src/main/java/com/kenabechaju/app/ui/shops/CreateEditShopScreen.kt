@@ -112,7 +112,7 @@ fun CreateEditShopScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     state.shop?.coverUrl?.let {
-                        AsyncImage(model = it, contentDescription = null, modifier = Modifier.fillMaxSize())
+                        AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, modifier = Modifier.fillMaxSize())
                     }
                     if (state.isUploadingCover) {
                         CircularProgressIndicator()
@@ -130,7 +130,7 @@ fun CreateEditShopScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     state.shop?.logoUrl?.let {
-                        AsyncImage(model = it, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                        AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
                     }
                     if (state.isUploadingLogo) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))

@@ -33,9 +33,17 @@ object Routes {
     fun otpVerify(email: String) = "otp_verify/${java.net.URLEncoder.encode(email, "UTF-8")}"
     fun chatThread(conversationId: String) = "chat/$conversationId"
     fun listingDetail(listingId: String) = "listing/$listingId"
+    // Bare path, no "?listingId=" suffix at all — matches the create case:
+    // navigating with the raw LISTING_FORM constant would send the literal,
+    // unsubstituted "{listingId}" placeholder text as the argument value
+    // instead of leaving it absent, a real bug caught via a live on-device
+    // test (a brand-new listing's screen showed "Edit listing" because
+    // listingId resolved to the string "{listingId}", not null).
+    const val CREATE_LISTING = "listing_form"
     fun editListing(listingId: String) = "listing_form?listingId=$listingId"
     fun publicProfile(userId: String) = "profile/$userId"
     fun shopStorefront(slug: String) = "shop/$slug"
+    const val CREATE_SHOP = "shop_form"
     fun editShop(shopId: String) = "shop_form?shopId=$shopId"
     fun postDetail(slug: String) = "post/$slug"
     fun myShopPosts(shopId: String) = "my_shop_posts/$shopId"
