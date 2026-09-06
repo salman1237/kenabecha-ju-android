@@ -25,10 +25,14 @@ android {
 
     buildTypes {
         debug {
-            // adb reverse tcp:8000 tcp:8000 — the same local dev stack the
-            // web app itself runs against, kept separate from production so
-            // test accounts never touch real data.
-            buildConfigField("String", "API_BASE_URL", "\"http://localhost:8000/\"")
+            // TEMPORARY: pointed at production so the user can try the app
+            // against real data, since there's no release-signing key set
+            // up yet to install the actual `release` variant (already
+            // wired to this same URL below). Revert to
+            // "http://localhost:8000/" (+ `adb reverse tcp:8000 tcp:8000`)
+            // for local dev — this debug variant touching real production
+            // data is a deliberate, temporary exception, not the norm.
+            buildConfigField("String", "API_BASE_URL", "\"https://api.kenabechaju.salmandev.io/\"")
         }
         release {
             optimization {

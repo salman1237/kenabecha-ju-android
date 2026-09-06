@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.kenabechaju.app.BuildConfig
 import com.kenabechaju.app.data.remote.ApiService
 import com.kenabechaju.app.data.remote.AuthInterceptor
+import com.kenabechaju.app.data.remote.RefreshApi
 import com.kenabechaju.app.data.remote.TokenAuthenticator
 import dagger.Module
 import dagger.Provides
@@ -15,7 +16,15 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+/** Marks the plain, un-authenticated client `RefreshApi` is built from —
+ *  see `RefreshApi`'s own doc comment for why this has to stay separate
+ *  from the client [TokenAuthenticator] is attached to. */
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RefreshClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -68,4 +77,26 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
+
+    @Provides
+    @Singleton
+    @RefreshClient
+    fun provideRefreshOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        }
+        // No AuthInterceptor (refresh always supplies its own @Header) and,
+        // critically, no TokenAuthenticator — see RefreshApi's doc comment.
+        return OkHttpClient.Builder().addInterceptor(logging).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRefreshApi(@RefreshClient client: OkHttpClient): RefreshApi =
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(RefreshApi::class.java)
 }
