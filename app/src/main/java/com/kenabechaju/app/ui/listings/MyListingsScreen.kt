@@ -14,12 +14,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,8 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.ListingDto
+import com.kenabechaju.app.ui.common.KbCard
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
+import com.kenabechaju.app.ui.common.StatusBadge
 import com.kenabechaju.app.ui.common.formatPrice
-import com.kenabechaju.app.ui.common.statusLabel
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -66,14 +64,7 @@ fun MyListingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("My Listings") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
+            KenaBechaTopBar(title = "My Listings", onBack = onBack)
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onCreateListing) {
@@ -128,7 +119,7 @@ private fun MyListingRow(
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    Card(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+    KbCard(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
         Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
@@ -150,7 +141,7 @@ private fun MyListingRow(
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                    Badge { Text(statusLabel(listing.status)) }
+                    StatusBadge(listing.status)
                     if (listing.status == "out_of_stock" && listing.restockRequestCount > 0) {
                         Text(
                             "🔔 ${listing.restockRequestCount} waiting for restock",

@@ -11,19 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,7 +30,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kenabechaju.app.data.remote.dto.PostDto
-import com.kenabechaju.app.ui.common.statusLabel
+import com.kenabechaju.app.ui.common.KbCard
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
+import com.kenabechaju.app.ui.common.StatusBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,14 +51,7 @@ fun MyShopPostsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Shop Posts") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
+            KenaBechaTopBar(title = "Shop Posts", onBack = onBack)
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onCreatePost) {
@@ -96,7 +86,7 @@ fun MyShopPostsScreen(
 
 @Composable
 private fun MyPostRow(post: PostDto, onClick: () -> Unit, onDelete: () -> Unit) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+    KbCard(onClick = onClick, modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -106,7 +96,7 @@ private fun MyPostRow(post: PostDto, onClick: () -> Unit, onDelete: () -> Unit) 
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                Badge { Text(statusLabel(post.status)) }
+                StatusBadge(post.status)
             }
             if (post.status == "rejected" && post.rejectionReason != null) {
                 Text(

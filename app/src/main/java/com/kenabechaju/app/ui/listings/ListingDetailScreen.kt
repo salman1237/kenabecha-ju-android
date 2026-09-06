@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Image
@@ -54,12 +55,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.ListingDto
+import com.kenabechaju.app.ui.common.GradientText
 import com.kenabechaju.app.ui.common.RateDialog
 import com.kenabechaju.app.ui.common.ReportDialog
+import com.kenabechaju.app.ui.common.StatusBadge
 import com.kenabechaju.app.ui.common.conditionLabel
 import com.kenabechaju.app.ui.common.formatPrice
 import com.kenabechaju.app.ui.common.fulfillmentLabel
-import com.kenabechaju.app.ui.common.statusLabel
 
 @Composable
 fun ListingDetailScreen(
@@ -167,7 +169,7 @@ fun ListingDetailScreen(
                                 modifier = Modifier.weight(1f).padding(end = 8.dp),
                             )
                             if (listing.status != "active") {
-                                Badge { Text(statusLabel(listing.status)) }
+                                StatusBadge(listing.status)
                             }
                             IconButton(onClick = { showReportDialog = true }, modifier = Modifier.size(28.dp)) {
                                 Icon(
@@ -179,10 +181,9 @@ fun ListingDetailScreen(
                             }
                         }
 
-                        Text(
+                        GradientText(
                             formatPrice(listing.price, listing.priceType, listing.unit),
                             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
-                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(top = 4.dp),
                         )
                         if (listing.priceType == "negotiable") {
@@ -376,11 +377,11 @@ private fun ImageGallery(listing: ListingDto) {
 private fun SellerRow(listing: ListingDto, onClick: (() -> Unit)?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+        modifier = (if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).fillMaxWidth(),
     ) {
         val imageUrl = listing.shop?.logoUrl ?: listing.seller.avatarUrl
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center,
         ) {
             if (imageUrl != null) {
@@ -389,15 +390,23 @@ private fun SellerRow(listing: ListingDto, onClick: (() -> Unit)?) {
                 Text(
                     (listing.shop?.shopName ?: listing.seller.fullName).take(1).uppercase(),
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
-        Column(modifier = Modifier.padding(start = 10.dp)) {
+        Column(modifier = Modifier.weight(1f).padding(start = 10.dp)) {
             Text(listing.shop?.shopName ?: listing.seller.fullName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
             Text(
                 if (listing.shop != null) "Campus shop" else "Student seller",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (listing.shop != null) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (onClick != null) {
+            Icon(
+                Icons.AutoMirrored.Filled.NavigateNext,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

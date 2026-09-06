@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -32,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.ShopDto
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.common.LabeledDropdown
 
 private val PRICE_TYPES = listOf("fixed" to "Fixed", "negotiable" to "Negotiable", "free" to "Free")
@@ -69,14 +68,7 @@ fun CreateEditListingScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (state.isEditing) "Edit listing" else "New listing") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
+            KenaBechaTopBar(title = if (state.isEditing) "Edit listing" else "New listing", onBack = onBack)
         },
     ) { padding ->
         Column(

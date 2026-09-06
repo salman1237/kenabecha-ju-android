@@ -30,11 +30,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import com.kenabechaju.app.ui.common.GradientText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -87,16 +89,16 @@ fun BrowseScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("KenaBecha JU", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold))
+                GradientText("KenaBecha JU", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold))
                 Row {
                     androidx.compose.material3.IconButton(onClick = onBrowseShopsClick) {
-                        Icon(Icons.Outlined.Storefront, contentDescription = "Shops")
+                        Icon(Icons.Outlined.Storefront, contentDescription = "Shops", tint = MaterialTheme.colorScheme.tertiary)
                     }
                     androidx.compose.material3.IconButton(onClick = onPostsClick) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Posts")
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Posts", tint = MaterialTheme.colorScheme.primary)
                     }
                     androidx.compose.material3.IconButton(onClick = onAccountClick) {
-                        Icon(Icons.Filled.AccountCircle, contentDescription = "Account")
+                        Icon(Icons.Filled.AccountCircle, contentDescription = "Account", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -105,7 +107,8 @@ fun BrowseScreen(
                 value = state.query,
                 onValueChange = viewModel::onQueryChange,
                 placeholder = { Text("Search listings") },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                shape = MaterialTheme.shapes.large,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default,
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
@@ -133,6 +136,10 @@ fun BrowseScreen(
                         selected = state.selectedCategorySlug == null,
                         onClick = { viewModel.onCategorySelected(null) },
                         label = { Text("All") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     )
                 }
                 items(state.categories) { category ->
@@ -140,6 +147,10 @@ fun BrowseScreen(
                         selected = state.selectedCategorySlug == category.slug,
                         onClick = { viewModel.onCategorySelected(category.slug) },
                         label = { Text("${category.icon.orEmpty()} ${category.name}".trim()) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     )
                 }
             }

@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 /**
  * Every ColorScheme role set explicitly, deliberately — a scheme built with
@@ -101,11 +102,14 @@ fun KenaBechaTheme(
     // colors, which is exactly how the reference app's first build ended up
     // looking like generic Material Design instead of the actual brand.
     val colorScheme = if (darkTheme) KbDarkColors else KbLightColors
+    val extendedColors = if (darkTheme) DarkExtendedColors else LightExtendedColors
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = KenaBechaTypography,
-        shapes = KenaBechaShapes,
-        content = content,
-    )
+    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = KenaBechaTypography,
+            shapes = KenaBechaShapes,
+            content = content,
+        )
+    }
 }

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.MessageDto
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.common.formatPrice
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,17 +68,16 @@ fun ChatThreadScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(state.conversation?.counterparty?.fullName ?: "Chat") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
+            KenaBechaTopBar(title = state.conversation?.counterparty?.fullName ?: "Chat", onBack = onBack)
         },
         bottomBar = {
-            Column {
+            // Edge-to-edge (MainActivity's enableEdgeToEdge) means this row
+            // draws behind the system gesture-nav bar unless it explicitly
+            // claims that inset back — confirmed live: without this, taps
+            // near the bottom of the input row landed on the system's
+            // gesture zone instead of the field, and the row was fully
+            // hidden behind the keyboard once it opened.
+            Column(modifier = Modifier.navigationBarsPadding().imePadding()) {
                 state.sendError?.let {
                     Text(
                         it,

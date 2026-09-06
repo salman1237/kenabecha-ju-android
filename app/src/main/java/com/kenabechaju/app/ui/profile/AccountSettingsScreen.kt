@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,10 +42,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.kenabechaju.app.ui.common.GradientText
+import com.kenabechaju.app.ui.common.KbCard
+import com.kenabechaju.app.ui.theme.KbColors
 
 @Composable
 fun AccountSettingsScreen(
@@ -76,7 +87,7 @@ fun AccountSettingsScreen(
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
-        Text("Account settings", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold))
+        GradientText("Account settings", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold))
         Spacer(Modifier.height(24.dp))
 
         if (state.isLoading) {
@@ -159,7 +170,7 @@ fun AccountSettingsScreen(
             if (state.saved) {
                 Text(
                     "Saved",
-                    color = Color(0xFF1E8E5A),
+                    color = KbColors.success,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -172,39 +183,61 @@ fun AccountSettingsScreen(
             ) {
                 Text(if (state.isSaving) "Saving…" else "Save changes")
             }
-            androidx.compose.material3.OutlinedButton(
-                onClick = onDashboard,
-                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-            ) {
-                Text("Dashboard")
+            KbCard(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)) {
+                Column {
+                    NavRow(Icons.Filled.Dashboard, "Dashboard", MaterialTheme.colorScheme.primary, onDashboard)
+                    NavRow(Icons.Filled.Inventory2, "My listings", KbColors.success, onMyListings)
+                    NavRow(Icons.AutoMirrored.Filled.Chat, "Inbox", KbColors.info, onInbox)
+                    NavRow(Icons.Filled.Notifications, "Notifications", KbColors.warning, onNotifications, showDivider = false)
+                }
             }
-            androidx.compose.material3.OutlinedButton(
-                onClick = onMyListings,
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-            ) {
-                Text("My listings")
-            }
-            androidx.compose.material3.OutlinedButton(
-                onClick = onInbox,
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-            ) {
-                Text("Inbox")
-            }
-            androidx.compose.material3.OutlinedButton(
-                onClick = onNotifications,
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-            ) {
-                Text("Notifications")
-            }
-            androidx.compose.material3.OutlinedButton(
-                onClick = viewModel::logout,
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-            ) {
-                Text("Log out")
-            }
+            NavRow(
+                Icons.AutoMirrored.Filled.Logout,
+                "Log out",
+                MaterialTheme.colorScheme.error,
+                viewModel::logout,
+                modifier = Modifier.padding(top = 12.dp),
+            )
             TextButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)) {
                 Text("Back")
             }
+        }
+    }
+}
+
+@Composable
+private fun NavRow(
+    icon: ImageVector,
+    label: String,
+    tint: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    showDivider: Boolean = true,
+) {
+    Column(modifier = modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+        ) {
+            Box(
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(tint.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
+            }
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f).padding(start = 12.dp),
+            )
+            Icon(
+                Icons.AutoMirrored.Filled.NavigateNext,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (showDivider) {
+            androidx.compose.material3.HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
 }
@@ -221,7 +254,7 @@ private fun JuVerificationStatus(profileComplete: Boolean, onCompleteProfile: ()
             Text(
                 "Verified — you can sell on KenaBecha JU.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF1E8E5A),
+                color = KbColors.success,
                 modifier = Modifier.padding(top = 4.dp),
             )
         } else {

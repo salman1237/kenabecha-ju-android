@@ -14,11 +14,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -28,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.RatingDto
+import com.kenabechaju.app.ui.common.KbCard
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.common.ReportDialog
 import com.kenabechaju.app.ui.listings.ListingCard
 
@@ -79,13 +78,9 @@ fun ShopStorefrontScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(state.shop?.shopName ?: "Shop") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
+            KenaBechaTopBar(
+                title = state.shop?.shopName ?: "Shop",
+                onBack = onBack,
                 actions = {
                     IconButton(onClick = { showReportDialog = true }) {
                         Icon(Icons.Filled.Flag, contentDescription = "Report this shop")
@@ -266,7 +261,7 @@ private fun StatItem(label: String, value: String) {
 
 @Composable
 private fun ReviewRow(review: RatingDto, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.fillMaxWidth()) {
+    KbCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row {
                 repeat(5) { i -> Text(if (i < review.stars) "★" else "☆", color = MaterialTheme.colorScheme.primary) }

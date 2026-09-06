@@ -1,5 +1,6 @@
 package com.kenabechaju.app.ui.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,30 +8,41 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.MarkChatUnread
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kenabechaju.app.ui.common.GradientText
+import com.kenabechaju.app.ui.common.KbCard
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.listings.ListingCard
+import com.kenabechaju.app.ui.theme.KbColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,14 +62,7 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Dashboard") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
+            KenaBechaTopBar(title = "Dashboard", onBack = onBack)
         },
     ) { padding ->
         when {
@@ -76,34 +81,49 @@ fun DashboardScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                 ) {
+                    GradientText(
+                        "Your overview",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+
                     // A plain Column of Rows, not LazyVerticalGrid: a lazy
                     // grid nested inside a scrollable Column needs a bounded
                     // height, and a hardcoded one silently clips whichever
                     // row doesn't fit it — confirmed via a live on-device
                     // test where the last row's labels were cut off. Six
                     // fixed items never need lazy/virtualized rendering.
+                    // Each stat also gets its own accent color/icon instead
+                    // of six identical gray tiles.
                     listOf(
-                        "Active listings" to stats.activeListings.toString(),
-                        "Sold" to stats.soldListings.toString(),
-                        "Shops" to stats.shops.toString(),
-                        "Unread messages" to stats.unreadMessages.toString(),
-                        "Conversations" to stats.conversations.toString(),
-                        "Saved" to stats.savedCount.toString(),
+                        StatSpec("Active listings", stats.activeListings.toString(), Icons.Filled.Inventory2) { KbColors.success },
+                        StatSpec("Sold", stats.soldListings.toString(), Icons.Filled.CheckCircle) { KbColors.info },
+                        StatSpec("Shops", stats.shops.toString(), Icons.Outlined.Storefront) { MaterialTheme.colorScheme.tertiary },
+                        StatSpec("Unread messages", stats.unreadMessages.toString(), Icons.Filled.MarkChatUnread) { KbColors.warning },
+                        StatSpec("Conversations", stats.conversations.toString(), Icons.AutoMirrored.Filled.Chat) { MaterialTheme.colorScheme.primary },
+                        // Not `secondary`: in this palette that role is a
+                        // near-white neutral (zinc-100), meant as a light
+                        // background, not a vivid accent — confirmed live,
+                        // it rendered the icon almost invisible.
+                        StatSpec("Saved", stats.savedCount.toString(), Icons.Filled.Bookmark) { MaterialTheme.colorScheme.tertiary },
                     ).chunked(2).forEach { rowItems ->
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                         ) {
-                            rowItems.forEach { (label, value) ->
-                                StatTile(label = label, value = value, modifier = Modifier.weight(1f))
+                            rowItems.forEach { spec ->
+                                StatTile(spec = spec, modifier = Modifier.weight(1f))
                             }
                         }
                     }
 
                     if (stats.ratingCount > 0) {
                         StatTile(
-                            label = "Rating",
-                            value = "★ ${"%.1f".format(stats.averageRating ?: 0.0)} (${stats.ratingCount})",
+                            spec = StatSpec(
+                                "Rating",
+                                "★ ${"%.1f".format(stats.averageRating ?: 0.0)} (${stats.ratingCount})",
+                                Icons.Filled.Star,
+                            ) { KbColors.warning },
                             modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                         )
                     }
@@ -151,12 +171,30 @@ fun DashboardScreen(
     }
 }
 
+private class StatSpec(
+    val label: String,
+    val value: String,
+    val icon: ImageVector,
+    val accent: @Composable () -> Color,
+)
+
 @Composable
-private fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
-    Card(modifier = modifier) {
+private fun StatTile(spec: StatSpec, modifier: Modifier = Modifier) {
+    val accent = spec.accent()
+    KbCard(modifier = modifier) {
         Column(modifier = Modifier.padding(14.dp)) {
-            Text(value, style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold))
-            Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Box(
+                modifier = Modifier.size(32.dp).background(accent.copy(alpha = 0.15f), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(spec.icon, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+            }
+            Text(
+                spec.value,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Text(spec.label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -16,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,8 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kenabechaju.app.ui.theme.KbColors
+import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.listings.ListingCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,17 +58,17 @@ fun AssistantScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Ask KenaBecha") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
+            KenaBechaTopBar(title = "Ask KenaBecha", onBack = onBack)
         },
         bottomBar = {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            // Edge-to-edge means this row draws behind the system
+            // gesture-nav bar unless it explicitly claims that inset back
+            // — confirmed live: without this, the row could sit at/under
+            // the gesture zone and was fully hidden behind the keyboard.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(8.dp),
+            ) {
                 OutlinedTextField(
                     value = state.draft,
                     onValueChange = viewModel::onDraftChange,
@@ -113,18 +117,31 @@ fun AssistantScreen(
 @Composable
 private fun AssistantBubble(message: AssistantMessage, onListingClick: (String) -> Unit) {
     val isUser = message.role == "user"
+    val shape = RoundedCornerShape(12.dp)
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
-            Box(
-                modifier = Modifier
+            val bubbleModifier = if (isUser) {
+                Modifier
                     .widthIn(max = 280.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(10.dp),
-            ) {
+                    .clip(shape)
+                    .background(
+                        Brush.linearGradient(
+                            listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary),
+                        ),
+                    )
+                    .padding(10.dp)
+            } else {
+                Modifier
+                    .widthIn(max = 280.dp)
+                    .shadow(elevation = 2.dp, shape = shape, ambientColor = KbColors.shadowPrimary, spotColor = KbColors.shadowPrimary)
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(10.dp)
+            }
+            Box(modifier = bubbleModifier) {
                 Text(
                     message.content.ifBlank { "…" },
-                    color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

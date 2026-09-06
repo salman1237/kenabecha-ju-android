@@ -33,6 +33,21 @@ val KbLightOnError = Color(0xFFFFFFFF)
 val KbLightErrorContainer = Color(0xFFFEE2E2)
 val KbLightOnErrorContainer = Color(0xFF7F1D1D)
 
+// --- semantic extras (matches web's --success/--warning/--info, absent
+// from Material3's own ColorScheme roles — see ExtendedColors.kt) ---
+val KbLightSuccess = Color(0xFF16A34A) // green-600
+val KbLightOnSuccess = Color(0xFFFFFFFF)
+val KbLightSuccessContainer = Color(0xFFDCFCE7) // green-100
+val KbLightOnSuccessContainer = Color(0xFF14532D) // green-900
+val KbLightWarning = Color(0xFFD97706) // amber-600
+val KbLightOnWarning = Color(0xFFFFFFFF)
+val KbLightWarningContainer = Color(0xFFFEF3C7) // amber-100
+val KbLightOnWarningContainer = Color(0xFF78350F) // amber-900
+val KbLightInfo = Color(0xFF2563EB) // blue-600
+val KbLightOnInfo = Color(0xFFFFFFFF)
+val KbLightInfoContainer = Color(0xFFDBEAFE) // blue-100
+val KbLightOnInfoContainer = Color(0xFF1E3A8A) // blue-900
+
 // --- dark ---
 val KbDarkBackground = Color(0xFF09090B)
 val KbDarkForeground = Color(0xFFFAFAFA)
@@ -54,3 +69,22 @@ val KbDarkError = Color(0xFFEF4444)
 val KbDarkOnError = Color(0xFF09090B)
 val KbDarkErrorContainer = Color(0xFF7F1D1D)
 val KbDarkOnErrorContainer = Color(0xFFFEE2E2)
+
+// --- semantic extras (matches web's --success/--warning/--info) ---
+val KbDarkSuccess = Color(0xFF22C55E) // green-500, matches web's dark --success
+val KbDarkOnSuccess = Color(0xFF09090B)
+val KbDarkSuccessContainer = Color(0xFF166534) // green-800
+val KbDarkOnSuccessContainer = Color(0xFFDCFCE7)
+val KbDarkWarning = Color(0xFFFBBF24) // amber-400, matches web's dark --warning
+val KbDarkOnWarning = Color(0xFF09090B)
+val KbDarkWarningContainer = Color(0xFF92400E) // amber-800
+val KbDarkOnWarningContainer = Color(0xFFFEF3C7)
+val KbDarkInfo = Color(0xFF60A5FA) // blue-400, matches web's dark --info
+val KbDarkOnInfo = Color(0xFF09090B)
+val KbDarkInfoContainer = Color(0xFF1E40AF) // blue-800
+val KbDarkOnInfoContainer = Color(0xFFDBEAFE)
+
+// Brand-tinted soft shadow, approximating web's `--shadow-soft-primary`
+// (rgb(16 185 129 / 0.12)) — used by KbCard for the "glow" elevated look.
+val KbShadowPrimaryLight = Color(0x1F059669)
+val KbShadowPrimaryDark = Color(0x2610B981)
