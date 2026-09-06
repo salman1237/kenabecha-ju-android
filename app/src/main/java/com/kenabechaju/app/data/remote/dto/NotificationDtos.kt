@@ -18,3 +18,6 @@ data class NotificationDto(
 
 @Serializable
 data class NotificationListDto(val items: List<NotificationDto>, @SerialName("unread_count") val unreadCount: Int)
+
+@Serializable
+data class DeviceTokenRequestDto(@SerialName("fcm_token") val fcmToken: String, val platform: String = "android")

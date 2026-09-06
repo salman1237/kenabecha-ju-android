@@ -3,6 +3,7 @@ package com.kenabechaju.app.data.remote
 import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.CompleteProfileRequestDto
 import com.kenabechaju.app.data.remote.dto.ConversationDto
+import com.kenabechaju.app.data.remote.dto.DeviceTokenRequestDto
 import com.kenabechaju.app.data.remote.dto.MessageDto
 import com.kenabechaju.app.data.remote.dto.NotificationListDto
 import com.kenabechaju.app.data.remote.dto.NotificationDto
@@ -45,6 +46,7 @@ import com.kenabechaju.app.data.remote.dto.UserProfileDto
 import com.kenabechaju.app.data.remote.dto.VerifyOtpRequestDto
 import okhttp3.MultipartBody
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -286,6 +288,12 @@ interface ApiService {
 
     @POST("notifications/read-all")
     suspend fun markAllNotificationsRead()
+
+    @POST("notifications/device-token")
+    suspend fun registerDeviceToken(@Body payload: DeviceTokenRequestDto)
+
+    @DELETE("notifications/device-token")
+    suspend fun unregisterDeviceToken(@Query("token") token: String)
 
     @GET("listings/{listingId}/rating-eligibility")
     suspend fun getRatingEligibility(@Path("listingId") listingId: String): RatingEligibilityDto

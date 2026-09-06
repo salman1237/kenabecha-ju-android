@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">KenaBecha JU</string>
+    <!-- Referenced by both AndroidManifest.xml's FCM meta-data and
+         KenaBechaApplication's eager channel creation — must stay the exact
+         same literal ID in both places. -->
+    <string name="default_notification_channel_id" translatable="false">default</string>
 </resources>
