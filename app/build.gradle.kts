@@ -32,13 +32,13 @@ android {
             // "http://localhost:8000/" (+ `adb reverse tcp:8000 tcp:8000`)
             // for local dev — this debug variant touching real production
             // data is a deliberate, temporary exception, not the norm.
-            buildConfigField("String", "API_BASE_URL", "\"https://api.kenabechaju.salmandev.io/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.kenabechaju.com/\"")
         }
         release {
             optimization {
                 enable = false
             }
-            buildConfigField("String", "API_BASE_URL", "\"https://api.kenabechaju.salmandev.io/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.kenabechaju.com/\"")
         }
     }
     compileOptions {
