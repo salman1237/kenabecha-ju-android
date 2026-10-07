@@ -23,14 +23,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -106,34 +109,103 @@ fun CreateEditListingScreen(
                 Spacer(Modifier.height(10.dp))
             }
 
-            LabeledDropdown(
-                label = "Price type",
-                options = PRICE_TYPES,
-                selected = PRICE_TYPES.find { it.first == state.priceType },
-                optionLabel = { it.second },
-                onSelect = { v -> viewModel.update { it.copy(priceType = v.first) } },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (state.priceType != "free") {
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedTextField(
-                        value = state.price,
-                        onValueChange = { v -> viewModel.update { it.copy(price = v) } },
-                        label = { Text("Price (৳)") },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
+            // Options are shop inventory only; a personal listing keeps the
+            // single price it has always had.
+            if (state.isShopListing) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = state.hasVariants,
+                        onCheckedChange = { on ->
+                            viewModel.update {
+                                it.copy(
+                                    hasVariants = on,
+                                    variants = if (on && it.variants.isEmpty()) listOf(VariantRow()) else it.variants,
+                                )
+                            }
+                        },
                     )
-                    OutlinedTextField(
-                        value = state.unit,
-                        onValueChange = { v -> viewModel.update { it.copy(unit = v) } },
-                        label = { Text("Per unit (optional)") },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
+                    Text("This item has multiple options")
                 }
             }
-            Spacer(Modifier.height(10.dp))
+
+            if (state.isShopListing && state.hasVariants) {
+                state.variants.forEachIndexed { index, row ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 6.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = row.name,
+                            onValueChange = { v -> viewModel.updateVariant(index) { it.copy(name = v) } },
+                            label = { Text("Option") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1.3f),
+                        )
+                        OutlinedTextField(
+                            value = row.price,
+                            onValueChange = { v -> viewModel.updateVariant(index) { it.copy(price = v) } },
+                            label = { Text("৳") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedTextField(
+                            value = row.unit,
+                            onValueChange = { v -> viewModel.updateVariant(index) { it.copy(unit = v) } },
+                            label = { Text("Unit") },
+                            singleLine = true,
+                            modifier = Modifier.weight(0.9f),
+                        )
+                        IconButton(onClick = { viewModel.removeVariant(index) }) {
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = "Remove option",
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = row.isAvailable,
+                            onCheckedChange = { v -> viewModel.updateVariant(index) { it.copy(isAvailable = v) } },
+                        )
+                        Text("Available", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+                TextButton(onClick = viewModel::addVariant, enabled = state.variants.size < 20) {
+                    Text("+ Add option")
+                }
+                Spacer(Modifier.height(10.dp))
+            } else {
+                LabeledDropdown(
+                    label = "Price type",
+                    options = PRICE_TYPES,
+                    selected = PRICE_TYPES.find { it.first == state.priceType },
+                    optionLabel = { it.second },
+                    onSelect = { v -> viewModel.update { it.copy(priceType = v.first) } },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (state.priceType != "free") {
+                    Spacer(Modifier.height(10.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedTextField(
+                            value = state.price,
+                            onValueChange = { v -> viewModel.update { it.copy(price = v) } },
+                            label = { Text("Price (৳)") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedTextField(
+                            value = state.unit,
+                            onValueChange = { v -> viewModel.update { it.copy(unit = v) } },
+                            label = { Text("Per unit (optional)") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+            }
 
             LabeledDropdown(
                 label = "Condition",

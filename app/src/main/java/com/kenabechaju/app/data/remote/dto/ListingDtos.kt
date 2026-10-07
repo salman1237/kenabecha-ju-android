@@ -40,6 +40,22 @@ data class CategoryDto(
 @Serializable
 data class ListingImageDto(val id: String, @SerialName("image_url") val imageUrl: String, @SerialName("sort_order") val sortOrder: Int)
 
+/**
+ * Mirrors `ListingVariantOut` — a priced option on a shop listing (a size,
+ * a pack quantity, a weight range), each with its own price, its own unit
+ * and its own availability. Shop listings only; a personal listing's single
+ * price stays the only price it has.
+ */
+@Serializable
+data class ListingVariantDto(
+    val id: String,
+    val name: String,
+    val price: String,
+    val unit: String? = null,
+    @SerialName("is_available") val isAvailable: Boolean = true,
+    @SerialName("sort_order") val sortOrder: Int = 0,
+)
+
 /** Mirrors `ListingSellerOut`. */
 @Serializable
 data class ListingSellerDto(
@@ -88,6 +104,7 @@ data class ListingDto(
     val category: CategoryRefDto? = null,
     @SerialName("custom_category") val customCategory: String? = null,
     val images: List<ListingImageDto> = emptyList(),
+    val variants: List<ListingVariantDto> = emptyList(),
     val tags: List<TagDto> = emptyList(),
     @SerialName("has_pending_restock_request") val hasPendingRestockRequest: Boolean? = null,
     @SerialName("restock_request_count") val restockRequestCount: Int = 0,

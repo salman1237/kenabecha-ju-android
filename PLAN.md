@@ -186,6 +186,18 @@ Device-verified after installing: Browse, Listing Detail, Account Settings, Dash
 
 ---
 
+## Phase 8 — Catching up with the web: priced options (variants) (implemented)
+
+The web app grew priced options on shop listings (a size, a pack quantity, a weight range — each with its own price, its own unit and its own availability) while the app sat untouched for a month. Until this, an Android buyer looking at a listing with options saw only the cheapest price with no hint the options existed, and an Android seller couldn't create or edit them at all.
+
+**Also fixed first**: the app still pointed at `api.kenabechaju.salmandev.io`, dead since the web app's own domain cutover — it now returns 404, so the app couldn't reach production at all. Both build types now use `api.kenabechaju.com`.
+
+**What shipped.** `ListingVariantDto` + `variants` on `ListingDto` (mirroring `ListingVariantOut` field for field, same discipline as every other DTO here), `ListingVariantRequestDto` + `variants` on both write DTOs, and `variants` threaded through `ListingFormInput` into both create and update calls. `formatListingPrice()` joins `formatPrice()` in `ui/common/Formatting.kt` — it adds the "From" cue when a listing has options, leaning on the server already keeping `price`/`unit` synced to the cheapest option rather than recomputing a minimum client-side. `ListingCard` shows that From-price plus an "N options" line. `ListingDetailScreen` gained a real picker: a `FlowRow` of `FilterChip`s that pre-selects the first *available* option (so the headline price is one a buyer can actually act on, not a teaser), swaps the headline price to the selected option's own price and unit, and renders an unavailable option disabled and struck through rather than hiding it — matching the web's own reasoning that a buyer should see an option exists even when it's out. `CreateEditListingScreen` gained the seller side: a "This item has multiple options" checkbox shown only for shop listings (the server rejects a variants payload on a personal listing outright), repeatable name/price/unit/available rows capped at 20, and the single price/unit fields swapped out while options are on. Validation mirrors the server's: no listing-level price needed when options are on, but every option needs a name and a price. On edit, `variants = []` is the explicit "remove every option"; a personal listing never sends the field at all.
+
+**Verified on the real device (TECNO BG6)**, against a dev backend holding the same hilsa-fish data the web was tested with: the browse grid shows "From ৳2,750/kg · 3 options", the detail screen pre-selects "800-900 gm" at ৳2,750/kg, and tapping "1 kg - 1.2 kg" swaps the headline to ৳3,200/kg. **Caveat, honestly recorded**: the seller-side editor compiles and follows the same already-verified shape as the rest of this form, but was not exercised on-device this pass — pointing the debug build at a local backend invalidated the production session token (the `TokenAuthenticator` cleared it on the 401), and re-testing the editor needs a logged-in shop owner.
+
+---
+
 ## Phase 7 — Bilingual, branding & release
 
 - **Bangla strings + a real language switch**: `values-bn/strings.xml`, hand-synced against `frontend/messages/bn.ts`; a manual EN/BN toggle in settings (not just following the device's system locale — the web app's own `LanguageContext` is a deliberate manual override too, not a locale-detection shortcut), persisted in DataStore.

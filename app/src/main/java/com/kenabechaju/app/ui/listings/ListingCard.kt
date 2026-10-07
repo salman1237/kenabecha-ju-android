@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import com.kenabechaju.app.ui.common.KbCard
-import com.kenabechaju.app.ui.common.formatPrice
+import com.kenabechaju.app.ui.common.formatListingPrice
 
 @Composable
 fun ListingCard(
@@ -104,12 +104,19 @@ fun ListingCard(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                formatPrice(listing.price, listing.priceType, listing.unit),
+                formatListingPrice(listing.price, listing.priceType, listing.unit, listing.variants.size),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (listing.variants.isNotEmpty()) {
+                Text(
+                    "${listing.variants.size} options",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             listing.shop?.let {
                 Text(
                     "🏪 ${it.shopName}",

@@ -14,6 +14,20 @@ fun formatPrice(price: String?, priceType: String, unit: String? = null): String
     return result
 }
 
+/** The price to show for a listing in a list/card context. A listing with
+ *  priced options shows its cheapest one prefixed with "From" — the server
+ *  already keeps `price`/`unit` synced to that cheapest option, so this
+ *  only has to add the cue. */
+fun formatListingPrice(
+    price: String?,
+    priceType: String,
+    unit: String?,
+    variantCount: Int,
+): String {
+    val formatted = formatPrice(price, priceType, unit)
+    return if (variantCount > 0 && formatted.isNotEmpty()) "From $formatted" else formatted
+}
+
 fun conditionLabel(condition: String): String = when (condition) {
     "new" -> "New"
     "used_like_new" -> "Used - Like New"

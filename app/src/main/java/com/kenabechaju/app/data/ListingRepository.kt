@@ -8,6 +8,7 @@ import com.kenabechaju.app.data.remote.dto.ListingCreateRequestDto
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import com.kenabechaju.app.data.remote.dto.ListingImageDto
 import com.kenabechaju.app.data.remote.dto.ListingUpdateRequestDto
+import com.kenabechaju.app.data.remote.dto.ListingVariantRequestDto
 import com.kenabechaju.app.data.remote.dto.PageDto
 import com.kenabechaju.app.data.remote.dto.TagDto
 import com.kenabechaju.app.data.remote.toApiFailure
@@ -66,6 +67,9 @@ data class ListingFormInput(
     // Only meaningful on create — ListingUpdate has no shop_id field at all,
     // a listing's shop association can't change after it's made.
     val shopId: String? = null,
+    // Shop listings only. null = don't send the field (personal listings, and
+    // edits that aren't touching options); [] = remove every option.
+    val variants: List<ListingVariantRequestDto>? = null,
 )
 
 @Singleton
@@ -116,6 +120,7 @@ class ListingRepository @Inject constructor(
                 categoryId = input.categoryId,
                 customCategory = input.customCategory,
                 shopId = input.shopId,
+                variants = input.variants,
             )
         )
     }
@@ -135,6 +140,7 @@ class ListingRepository @Inject constructor(
                 pickupAddress = input.pickupAddress,
                 categoryId = input.categoryId,
                 customCategory = input.customCategory,
+                variants = input.variants,
             )
         )
     }

@@ -10,6 +10,7 @@ import com.kenabechaju.app.data.ListingRepository
 import com.kenabechaju.app.data.ShopRepository
 import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.ListingImageDto
+import com.kenabechaju.app.data.remote.dto.ListingVariantRequestDto
 import com.kenabechaju.app.data.remote.dto.ShopDto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+/** One editable option row. Prices stay strings while being typed, same as
+ *  the listing's own price field. */
+data class VariantRow(
+    val name: String = "",
+    val price: String = "",
+    val unit: String = "",
+    val isAvailable: Boolean = true,
+)
 
 data class CreateEditListingUiState(
     val listingId: String? = null,
@@ -35,6 +45,8 @@ data class CreateEditListingUiState(
     val myShops: List<ShopDto> = emptyList(),
     val shopId: String? = null,
     val images: List<ListingImageDto> = emptyList(),
+    val hasVariants: Boolean = false,
+    val variants: List<VariantRow> = emptyList(),
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isUploadingPhoto: Boolean = false,
@@ -42,6 +54,10 @@ data class CreateEditListingUiState(
     val saved: Boolean = false,
 ) {
     val isEditing: Boolean get() = listingId != null
+
+    /** Options are a shop-inventory concept — the server rejects a variants
+     *  payload on a personal listing outright. */
+    val isShopListing: Boolean get() = shopId != null
 }
 
 /** One screen for both create (POST /listings) and edit (PATCH
@@ -108,6 +124,16 @@ class CreateEditListingViewModel @Inject constructor(
                         categoryId = l.category?.id,
                         customCategory = l.customCategory.orEmpty(),
                         images = l.images,
+                        shopId = l.shop?.id,
+                        hasVariants = l.variants.isNotEmpty(),
+                        variants = l.variants.map {
+                            VariantRow(
+                                name = it.name,
+                                price = it.price,
+                                unit = it.unit.orEmpty(),
+                                isAvailable = it.isAvailable,
+                            )
+                        },
                     )
                 }
                 is AuthResult.Failure -> _state.value = _state.value.copy(isLoading = false, error = result.error.message)
@@ -134,7 +160,36 @@ class CreateEditListingViewModel @Inject constructor(
             categoryId = if (s.customCategory.isNotBlank()) null else s.categoryId,
             customCategory = s.customCategory.trim().ifBlank { null },
             shopId = s.shopId,
+            // Only shop listings may send this at all. [] on an edit is the
+            // explicit "remove every option"; null leaves them untouched.
+            variants = when {
+                !s.isShopListing -> null
+                s.hasVariants -> s.variants.map {
+                    ListingVariantRequestDto(
+                        name = it.name.trim(),
+                        price = it.price.trim(),
+                        unit = it.unit.trim().ifBlank { null },
+                        isAvailable = it.isAvailable,
+                    )
+                }
+                s.isEditing -> emptyList()
+                else -> null
+            },
         )
+    }
+
+    fun addVariant() {
+        update { it.copy(variants = it.variants + VariantRow()) }
+    }
+
+    fun updateVariant(index: Int, block: (VariantRow) -> VariantRow) {
+        update { s ->
+            s.copy(variants = s.variants.mapIndexed { i, row -> if (i == index) block(row) else row })
+        }
+    }
+
+    fun removeVariant(index: Int) {
+        update { it.copy(variants = it.variants.filterIndexed { i, _ -> i != index }) }
     }
 
     fun submit() {
@@ -143,9 +198,20 @@ class CreateEditListingViewModel @Inject constructor(
             _state.value = s.copy(error = "Title and description are required")
             return
         }
-        if (s.priceType == "fixed" && s.price.isBlank()) {
+        val usingVariants = s.isShopListing && s.hasVariants
+        if (s.priceType == "fixed" && s.price.isBlank() && !usingVariants) {
             _state.value = s.copy(error = "Price is required for a fixed price")
             return
+        }
+        if (usingVariants) {
+            if (s.variants.isEmpty()) {
+                _state.value = s.copy(error = "Add at least one option, or turn options off")
+                return
+            }
+            if (s.variants.any { it.name.isBlank() || it.price.isBlank() }) {
+                _state.value = s.copy(error = "Every option needs a name and a price")
+                return
+            }
         }
         if (s.fulfillmentType != "delivery" && s.pickupAddress.isBlank()) {
             _state.value = s.copy(error = "Pickup address is required when pickup is offered")

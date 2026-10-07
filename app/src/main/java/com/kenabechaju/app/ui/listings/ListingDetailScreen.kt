@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,6 +35,8 @@ import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -60,9 +65,11 @@ import com.kenabechaju.app.ui.common.RateDialog
 import com.kenabechaju.app.ui.common.ReportDialog
 import com.kenabechaju.app.ui.common.StatusBadge
 import com.kenabechaju.app.ui.common.conditionLabel
+import com.kenabechaju.app.ui.common.formatListingPrice
 import com.kenabechaju.app.ui.common.formatPrice
 import com.kenabechaju.app.ui.common.fulfillmentLabel
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ListingDetailScreen(
     onBack: () -> Unit,
@@ -76,6 +83,12 @@ fun ListingDetailScreen(
     val context = LocalContext.current
     var showReportDialog by remember { mutableStateOf(false) }
     var showRateDialog by remember { mutableStateOf(false) }
+    // Pre-selects the first option a buyer can actually pick, so the headline
+    // price is a real, orderable one rather than a "from" teaser.
+    var selectedVariantId by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(state.listing?.id, state.listing?.variants) {
+        selectedVariantId = state.listing?.variants?.firstOrNull { it.isAvailable }?.id
+    }
 
     LaunchedEffect(state.openConversationId) {
         state.openConversationId?.let(onOpenConversation)
@@ -181,8 +194,18 @@ fun ListingDetailScreen(
                             }
                         }
 
+                        val selectedVariant = listing.variants.firstOrNull { it.id == selectedVariantId }
                         GradientText(
-                            formatPrice(listing.price, listing.priceType, listing.unit),
+                            if (selectedVariant != null) {
+                                formatPrice(selectedVariant.price, "fixed", selectedVariant.unit)
+                            } else {
+                                formatListingPrice(
+                                    listing.price,
+                                    listing.priceType,
+                                    listing.unit,
+                                    listing.variants.size,
+                                )
+                            },
                             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
                             modifier = Modifier.padding(top = 4.dp),
                         )
@@ -192,6 +215,35 @@ fun ListingDetailScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+
+                        if (listing.variants.isNotEmpty()) {
+                            Text(
+                                "Choose an option",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 10.dp),
+                            )
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listing.variants.forEach { variant ->
+                                    FilterChip(
+                                        selected = variant.id == selectedVariantId,
+                                        enabled = variant.isAvailable,
+                                        onClick = { selectedVariantId = variant.id },
+                                        label = {
+                                            Text(
+                                                if (variant.isAvailable) {
+                                                    variant.name
+                                                } else {
+                                                    "${variant.name} (Unavailable)"
+                                                },
+                                                textDecoration =
+                                                    if (variant.isAvailable) null else TextDecoration.LineThrough,
+                                            )
+                                        },
+                                    )
+                                }
+                            }
                         }
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
