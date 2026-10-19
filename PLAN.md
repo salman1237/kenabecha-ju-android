@@ -222,6 +222,20 @@ Fixed by implementing `onMessageReceived` to build and show the notification its
 
 ---
 
+## Phase 11 — A real bottom navigation bar (implemented)
+
+User-requested ("add a proper mobile nav"), and the friction was concrete, not hypothetical: live-testing Phase 9/10's fixes, finding the Inbox screen itself took several tries, because the only path to it was Browse → Account Settings → scroll down to a plain list of links. There was no persistent navigation at all — Browse's own top bar carried three icon shortcuts (Shops/Posts/Account) as the sole alternative to that one path.
+
+Added a Material3 `NavigationBar` with five destinations — Browse, Shops, Sell, Inbox, Account — wired into `KenaBechaNavHost` via an outer `Scaffold` around the existing `NavHost` (MainActivity's own outer Scaffold was deliberately left alone, per its existing comment that each screen manages its own padding; this new one lives one level in, scoped to just the nav host). The bar only renders on these five top-level routes (`BOTTOM_NAV_ROUTES`) and hides on every drill-down screen — listing detail, chat thread, forms, shop storefronts — the same convention Material's own bottom-nav guidance describes; confirmed live that a listing detail screen correctly hides it and the Sell tab's "New listing" form correctly hides it too (a flow you complete and leave, not a tab with state to return to). Tab taps use `popUpTo(HOME){saveState=true}` + `restoreState=true`, the standard bottom-nav-with-NavController recipe, so switching tabs doesn't stack duplicate back-stack entries or lose each tab's own scroll position; Sell is a plain `navigate()` instead since it has no state worth restoring.
+
+New `BottomNavViewModel` (Hilt, scoped to the NavHost itself so one instance outlives any single screen) backs an unread-message badge on the Inbox tab, mirroring the web app's `useUnreadMessageCount` hook exactly: reload the true total from `ChatRepository.listConversations()` on every `ChatSocket` event rather than hand-rolling increment/decrement bookkeeping that could drift from the server's own count.
+
+`BrowseScreen`'s top bar lost its now-redundant Shops/Account icon buttons (both covered by the new bar); Posts stays there since it isn't one of the five bottom-nav destinations.
+
+**Verified live on device**: all five tabs confirmed working by direct `uiautomator`-measured taps (not just visual guessing) — Browse, Shops, Sell, Inbox and Account each land correctly, Inbox is now one tap away instead of four, and the bar correctly disappears on both a listing detail screen and the New Listing form.
+
+---
+
 ## Phase 7 — Bilingual, branding & release
 
 - **Bangla strings + a real language switch**: `values-bn/strings.xml`, hand-synced against `frontend/messages/bn.ts`; a manual EN/BN toggle in settings (not just following the device's system locale — the web app's own `LanguageContext` is a deliberate manual override too, not a locale-detection shortcut), persisted in DataStore.
