@@ -92,7 +92,10 @@ fun ListingDetailScreen(
     }
 
     LaunchedEffect(state.openConversationId) {
-        state.openConversationId?.let(onOpenConversation)
+        state.openConversationId?.let {
+            onOpenConversation(it)
+            viewModel.onConversationOpened()
+        }
     }
     LaunchedEffect(state.reportSubmitted) {
         if (state.reportSubmitted) {

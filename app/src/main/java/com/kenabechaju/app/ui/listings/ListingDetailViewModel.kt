@@ -103,6 +103,14 @@ class ListingDetailViewModel @Inject constructor(
         }
     }
 
+    /** Clears the navigate-to-thread trigger once it has been acted on.
+     *  Without this the id survives on the back stack, so returning from
+     *  the thread re-fires the effect and bounces the user straight back
+     *  into it — the Back button looks broken. */
+    fun onConversationOpened() {
+        _state.value = _state.value.copy(openConversationId = null)
+    }
+
     private fun loadRatingEligibility() {
         viewModelScope.launch {
             when (val result = ratingRepository.eligibility(listingId)) {
