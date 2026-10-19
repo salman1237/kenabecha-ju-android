@@ -35,6 +35,7 @@ import com.kenabechaju.app.ui.common.KenaBechaTopBar
 @Composable
 fun NotificationsScreen(
     onBack: () -> Unit,
+    onOpenLink: (String) -> Unit,
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -70,7 +71,13 @@ fun NotificationsScreen(
                 }
                 else -> LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(state.items, key = { it.id }) { notification ->
-                        NotificationRow(notification, onClick = { viewModel.markRead(notification.id) })
+                        NotificationRow(
+                            notification,
+                            onClick = {
+                                viewModel.markRead(notification.id)
+                                notification.linkUrl?.let(onOpenLink)
+                            },
+                        )
                     }
                 }
             }

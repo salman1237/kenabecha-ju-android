@@ -66,7 +66,7 @@ private fun StartupGate(authRepository: AuthRepository, onResolved: (loggedIn: B
 }
 
 @Composable
-fun KenaBechaNavHost(authRepository: AuthRepository) {
+fun KenaBechaNavHost(authRepository: AuthRepository, pendingLinkUrl: String? = null, onLinkConsumed: () -> Unit = {}) {
     val navController = rememberNavController()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
@@ -77,25 +77,48 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         return
     }
 
-    // Only the five top-level destinations in BOTTOM_NAV_ROUTES show the
+    // Only the seven top-level destinations in BOTTOM_NAV_ROUTES show the
     // bar; everything drilled into from one of them (detail screens,
     // forms, chat threads) hides it, and auth screens never reach here
     // since startDestination already resolved past them.
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     val bottomNavViewModel: BottomNavViewModel = hiltViewModel()
-    val unreadCount by bottomNavViewModel.unreadCount.collectAsState()
+    val unreadMessageCount by bottomNavViewModel.unreadMessageCount.collectAsState()
+    val unreadNotificationCount by bottomNavViewModel.unreadNotificationCount.collectAsState()
+
+    // The Notifications screen's own unread count can only go down while
+    // it's open; re-checking the bottom-nav badge whenever the user leaves
+    // *any* screen (not just Notifications) catches that without a poll
+    // loop, the same "stale-on-return" fix already applied screen-by-screen
+    // elsewhere in this app.
+    LaunchedEffect(currentRoute) { bottomNavViewModel.refreshNotifications() }
+
+    // A tapped push notification's link_url (see KenaBechaMessagingService)
+    // arrives here once startDestination has resolved -- only meaningful
+    // once logged in, since the deep-linked screen needs an authenticated
+    // session. Cleared immediately after navigating so rotating the device
+    // or returning to this composable doesn't replay the same navigation,
+    // the exact bug class already fixed once for the chat-thread Back
+    // button (ListingDetailViewModel.onConversationOpened).
+    LaunchedEffect(pendingLinkUrl, startDestination) {
+        if (startDestination == Routes.HOME && pendingLinkUrl != null) {
+            resolveDeepLink(pendingLinkUrl)?.let { route -> navController.navigate(route) }
+            onLinkConsumed()
+        }
+    }
 
     Scaffold(
         bottomBar = {
             if (currentRoute in BOTTOM_NAV_ROUTES) {
                 KenaBechaBottomBar(
                     currentRoute = currentRoute,
-                    unreadCount = unreadCount,
+                    unreadMessageCount = unreadMessageCount,
+                    unreadNotificationCount = unreadNotificationCount,
                     onNavigate = { route ->
                         if (route == Routes.CREATE_LISTING) {
                             // An action, not a tab to land on and return to
                             // — no saved/restored state the way the other
-                            // four persist their own scroll position.
+                            // six persist their own scroll position.
                             navController.navigate(route)
                         } else {
                             navController.navigate(route) {
@@ -301,7 +324,10 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
             ChatThreadScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.NOTIFICATIONS) {
-            NotificationsScreen(onBack = { navController.popBackStack() })
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenLink = { link -> resolveDeepLink(link)?.let { navController.navigate(it) } },
+            )
         }
     }
     }

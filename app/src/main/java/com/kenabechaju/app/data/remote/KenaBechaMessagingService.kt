@@ -33,9 +33,12 @@ import javax.inject.Inject
  * is open, not that the user is looking at the relevant one, so every push
  * that arrived while the app was simply open (on any screen) was silently
  * dropped with nothing shown at all. Built to match the auto-display path
- * as closely as possible: same channel, same launcher icon, same
- * open-the-app tap action -- the one difference is deep-linking to the
- * exact conversation/listing isn't implemented on either path yet.
+ * as closely as possible: same channel, same launcher icon, and the same
+ * deep-link behavior -- FCM's own auto-display already attaches every
+ * `data` key (including `link_url`) as a plain string extra on the Intent
+ * it launches with, so using the identical extra key here
+ * (MainActivity.EXTRA_LINK_URL) makes both paths resolvable the same way
+ * once the Intent reaches MainActivity.
  */
 @AndroidEntryPoint
 class KenaBechaMessagingService : FirebaseMessagingService() {
@@ -68,6 +71,9 @@ class KenaBechaMessagingService : FirebaseMessagingService() {
 
         val openApp = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            message.data["link_url"]?.takeIf { it.isNotBlank() }?.let {
+                putExtra(MainActivity.EXTRA_LINK_URL, it)
+            }
         }
         val pendingIntent = PendingIntent.getActivity(
             this,

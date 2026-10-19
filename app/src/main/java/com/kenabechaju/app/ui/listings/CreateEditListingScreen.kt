@@ -37,6 +37,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
@@ -44,10 +47,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.kenabechaju.app.data.remote.dto.CategoryDto
 import com.kenabechaju.app.data.remote.dto.ShopDto
 import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.common.LabeledDropdown
+
+/** One flattened row in the category dropdown — either a top-level
+ *  category, one of its subcategories (pre-indented into [label]), or the
+ *  trailing "Other" sentinel. [id] is [OTHER_CATEGORY_ID] only for that
+ *  sentinel row, never a real category id. */
+private data class CategoryOption(val id: String, val label: String)
+private const val OTHER_CATEGORY_ID = "other"
 
 private val PRICE_TYPES = listOf("fixed" to "Fixed", "negotiable" to "Negotiable", "free" to "Free")
 private val CONDITIONS = listOf(
@@ -208,33 +217,83 @@ fun CreateEditListingScreen(
                 Spacer(Modifier.height(10.dp))
             }
 
-            LabeledDropdown(
-                label = "Condition",
-                options = CONDITIONS,
-                selected = CONDITIONS.find { it.first == state.condition },
-                optionLabel = { it.second },
-                onSelect = { v -> viewModel.update { it.copy(condition = v.first) } },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(10.dp))
+            // Condition isn't a meaningful concept for shop inventory (a
+            // shop's stock isn't "used" or "like new" the way a personal
+            // listing is) — web hides this field for shop listings for the
+            // same reason and only requires it for personal ones.
+            if (!state.isShopListing) {
+                LabeledDropdown(
+                    label = "Condition",
+                    options = CONDITIONS,
+                    selected = CONDITIONS.find { it.first == state.condition },
+                    optionLabel = { it.second },
+                    onSelect = { v -> viewModel.update { it.copy(condition = v.first) } },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(10.dp))
+            }
 
+            // A flat list with subcategories indented underneath their
+            // parent, plus a trailing "Other" sentinel — mirrors the web
+            // app's CategorySelectOptions exactly. The old version only
+            // ever listed top-level categories: CategoryDto.children was
+            // fetched but never rendered, which is the literal cause of
+            // "can't see subcategory" — subcategories weren't flattened
+            // and un-indented, they were simply absent from the dropdown.
+            val categoryOptions = remember(state.categories) {
+                state.categories.flatMap { parent ->
+                    listOf(CategoryOption(parent.id, parent.name)) +
+                        parent.children.map { child -> CategoryOption(child.id, "   — ${child.name}") }
+                } + CategoryOption(OTHER_CATEGORY_ID, "Other")
+            }
+            // Tracks "Other" as a deliberate choice, separate from simply
+            // not having picked anything yet -- both leave categoryId
+            // null, but only one of them should reveal the custom-name
+            // field below. Seeded from an existing custom category so
+            // editing a listing that already used "Other" still shows it.
+            // Keyed on isLoading (true only during the initial edit-mode
+            // fetch, never on submit) rather than on customCategory itself
+            // -- keying on the text would re-seed this to false the moment
+            // the user backspaced it empty while still typing, yanking the
+            // field out from under them mid-edit.
+            var otherSelected by remember(state.isLoading) { mutableStateOf(state.customCategory.isNotBlank()) }
+            val selectedCategoryOption = when {
+                state.categoryId != null -> categoryOptions.find { it.id == state.categoryId }
+                otherSelected -> categoryOptions.find { it.id == OTHER_CATEGORY_ID }
+                else -> null
+            }
             LabeledDropdown(
                 label = "Category",
-                options = state.categories,
-                selected = state.categories.find { it.id == state.categoryId },
-                optionLabel = CategoryDto::name,
-                onSelect = { c -> viewModel.update { it.copy(categoryId = c.id, customCategory = "") } },
+                options = categoryOptions,
+                selected = selectedCategoryOption,
+                optionLabel = CategoryOption::label,
+                onSelect = { option ->
+                    if (option.id == OTHER_CATEGORY_ID) {
+                        otherSelected = true
+                        viewModel.update { it.copy(categoryId = null) }
+                    } else {
+                        otherSelected = false
+                        viewModel.update { it.copy(categoryId = option.id, customCategory = "") }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
-                value = state.customCategory,
-                onValueChange = { v -> viewModel.update { it.copy(customCategory = v, categoryId = null) } },
-                label = { Text("Or a custom category") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(10.dp))
+            // Only shown once "Other" is actually selected -- previously
+            // this field was always visible and silently stole focus from
+            // whatever category was picked the moment you typed one
+            // character into it, since its onValueChange cleared
+            // categoryId unconditionally.
+            if (otherSelected) {
+                OutlinedTextField(
+                    value = state.customCategory,
+                    onValueChange = { v -> viewModel.update { it.copy(customCategory = v) } },
+                    label = { Text("Custom category name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(10.dp))
+            }
 
             OutlinedTextField(
                 value = state.tagsText,
