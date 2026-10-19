@@ -1,6 +1,7 @@
 package com.kenabechaju.app.data
 
 import com.kenabechaju.app.data.remote.ApiService
+import com.kenabechaju.app.data.remote.dto.ActivityPointDto
 import com.kenabechaju.app.data.remote.dto.DashboardStatsDto
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import com.kenabechaju.app.data.remote.dto.UserProfileDto
@@ -11,6 +12,8 @@ import javax.inject.Singleton
 @Singleton
 class DashboardRepository @Inject constructor(private val api: ApiService) {
     suspend fun stats(): AuthResult<DashboardStatsDto> = resultOf { api.getDashboardStats() }
+
+    suspend fun activity(days: Int = 30): AuthResult<List<ActivityPointDto>> = resultOf { api.getDashboardActivity(days) }
 
     suspend fun savedListings(): AuthResult<List<ListingDto>> = resultOf { api.getSavedListings() }
 

@@ -16,6 +16,11 @@ data class DashboardStatsDto(
     @SerialName("rating_count") val ratingCount: Int,
 )
 
+/** Mirrors `ActivityPoint` — one day's listing-creation count, zero-filled
+ *  server-side so the series has no gaps. */
+@Serializable
+data class ActivityPointDto(val date: String, val count: Int)
+
 /** Mirrors `RatingOut`. */
 @Serializable
 data class RatingDto(

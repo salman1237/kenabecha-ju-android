@@ -87,7 +87,7 @@ class PostComposerViewModel @Inject constructor(
                     _state.value = _state.value.copy(
                         isLoading = false,
                         title = post?.title.orEmpty(),
-                        bodyText = post?.let { htmlToPlainText(it.descriptionHtml) }.orEmpty(),
+                        bodyText = post?.let { com.kenabechaju.app.ui.common.htmlToEditableText(it.descriptionHtml) }.orEmpty(),
                         existingStatus = post?.status,
                         selectedListingIds = post?.listings?.map { it.id }?.toSet().orEmpty(),
                         images = post?.images.orEmpty(),
@@ -116,7 +116,7 @@ class PostComposerViewModel @Inject constructor(
             return
         }
         _state.value = s.copy(isSaving = true, error = null)
-        val html = plainTextToHtml(s.bodyText)
+        val html = com.kenabechaju.app.ui.common.editableTextToHtml(s.bodyText)
         val listingIds = s.selectedListingIds.toList()
         viewModelScope.launch {
             val result = if (s.postId != null) {
@@ -161,22 +161,3 @@ class PostComposerViewModel @Inject constructor(
     }
 }
 
-private fun escapeHtml(s: String): String = s
-    .replace("&", "&amp;")
-    .replace("<", "&lt;")
-    .replace(">", "&gt;")
-
-private fun plainTextToHtml(text: String): String =
-    text.split("\n").filter { it.isNotBlank() }.joinToString("") { "<p>${escapeHtml(it.trim())}</p>" }
-
-/** Best-effort inverse of `plainTextToHtml`, for populating the plain-text
- *  editor from a post that might carry richer formatting (authored on
- *  web) — strips tags rather than trying to preserve them, since the
- *  composer's input side has no rich-text controls to preserve them with. */
-private fun htmlToPlainText(html: String): String = html
-    .replace(Regex("</p>\\s*<p>"), "\n")
-    .replace(Regex("<[^>]*>"), "")
-    .replace("&amp;", "&")
-    .replace("&lt;", "<")
-    .replace("&gt;", ">")
-    .trim()

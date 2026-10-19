@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
 import com.kenabechaju.app.data.DashboardRepository
 import com.kenabechaju.app.data.ListingRepository
+import com.kenabechaju.app.data.remote.dto.ActivityPointDto
 import com.kenabechaju.app.data.remote.dto.DashboardStatsDto
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ import javax.inject.Inject
 data class DashboardUiState(
     val stats: DashboardStatsDto? = null,
     val recentListings: List<ListingDto> = emptyList(),
+    val activity: List<ActivityPointDto> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
 )
@@ -41,6 +43,10 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             val statsResult = dashboardRepository.stats()
             val listingsResult = listingRepository.myListings()
+            // Soft-fail: the activity trend is a nice-to-have on top of the
+            // stat tiles, not core dashboard data, so a failed fetch just
+            // leaves the chart empty instead of blocking the whole screen.
+            val activity = (dashboardRepository.activity(30) as? AuthResult.Success)?.value.orEmpty()
             _state.value = when {
                 statsResult is AuthResult.Failure -> _state.value.copy(isLoading = false, error = statsResult.error.message)
                 listingsResult is AuthResult.Failure -> _state.value.copy(isLoading = false, error = listingsResult.error.message)
@@ -48,6 +54,7 @@ class DashboardViewModel @Inject constructor(
                     isLoading = false,
                     stats = statsResult.value,
                     recentListings = listingsResult.value.take(5),
+                    activity = activity,
                 )
                 else -> _state.value.copy(isLoading = false)
             }

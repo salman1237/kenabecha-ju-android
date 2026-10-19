@@ -12,6 +12,7 @@ import com.kenabechaju.app.data.remote.dto.RatingDto
 import com.kenabechaju.app.data.remote.dto.RatingEligibilityDto
 import com.kenabechaju.app.data.remote.dto.ReportCreateRequestDto
 import com.kenabechaju.app.data.remote.dto.SendMessageRequestDto
+import com.kenabechaju.app.data.remote.dto.ActivityPointDto
 import com.kenabechaju.app.data.remote.dto.DashboardStatsDto
 import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.ForgotPasswordRequestDto
@@ -184,6 +185,9 @@ interface ApiService {
 
     @GET("dashboard/stats")
     suspend fun getDashboardStats(): DashboardStatsDto
+
+    @GET("dashboard/activity")
+    suspend fun getDashboardActivity(@Query("days") days: Int = 30): List<ActivityPointDto>
 
     @GET("dashboard/saved")
     suspend fun getSavedListings(): List<ListingDto>

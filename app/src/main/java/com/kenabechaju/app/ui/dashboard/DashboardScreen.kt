@@ -129,6 +129,13 @@ fun DashboardScreen(
                         )
                     }
 
+                    if (state.activity.isNotEmpty()) {
+                        com.kenabechaju.app.ui.dashboard.ActivityChart(
+                            points = state.activity,
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        )
+                    }
+
                     TextButton(onClick = onSavedListings, modifier = Modifier.padding(top = 16.dp)) {
                         Text("View saved listings (${stats.savedCount})")
                     }

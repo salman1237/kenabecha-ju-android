@@ -93,11 +93,9 @@ fun PostComposerScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            com.kenabechaju.app.ui.common.RichTextEditor(
                 value = state.bodyText,
                 onValueChange = { v -> viewModel.update { it.copy(bodyText = v) } },
-                label = { Text("What's new?") },
-                minLines = 5,
                 modifier = Modifier.fillMaxWidth(),
             )
 
