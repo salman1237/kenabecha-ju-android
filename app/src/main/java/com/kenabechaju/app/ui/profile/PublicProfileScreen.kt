@@ -1,6 +1,7 @@
 package com.kenabechaju.app.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -83,7 +85,7 @@ fun PublicProfileScreen(
                 CircularProgressIndicator()
             }
             state.error != null -> Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(state.error!!, color = MaterialTheme.colorScheme.error)
+                Text(state.error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
             }
             state.profile != null -> {
                 val profile = state.profile!!
@@ -100,7 +102,7 @@ fun PublicProfileScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             if (profile.avatarUrl != null) {
-                                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(profile.avatarUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(profile.avatarUrl), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clip(CircleShape))
                             } else {
                                 Text(profile.fullName.take(1).uppercase(), style = MaterialTheme.typography.headlineSmall)
                             }

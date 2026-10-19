@@ -1,6 +1,7 @@
 package com.kenabechaju.app.ui.posts
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -59,7 +61,7 @@ fun PostDetailScreen(
                 CircularProgressIndicator()
             }
             state.error != null -> Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(state.error!!, color = MaterialTheme.colorScheme.error)
+                Text(state.error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
             }
             state.post != null -> {
                 val post = state.post!!
@@ -79,7 +81,7 @@ fun PostDetailScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             if (post.shop.logoUrl != null) {
-                                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(post.shop.logoUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(post.shop.logoUrl), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clip(CircleShape))
                             } else {
                                 Icon(Icons.Outlined.Storefront, contentDescription = null, modifier = Modifier.size(18.dp))
                             }
@@ -97,6 +99,7 @@ fun PostDetailScreen(
                         AsyncImage(
                             model = com.kenabechaju.app.ui.common.mediaUrl(post.images.first().imageUrl),
                             contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(16f / 9f)

@@ -1,6 +1,7 @@
 package com.kenabechaju.app.ui.listings
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -78,10 +80,10 @@ fun MyListingsScreen(
                     CircularProgressIndicator()
                 }
                 state.error != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.error!!, color = MaterialTheme.colorScheme.error)
+                    Text(state.error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
                 }
                 state.listings.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("You haven't listed anything yet", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("You haven't listed anything yet", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
                 }
                 else -> LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)) {
                     items(state.listings, key = { it.id }) { listing ->
@@ -127,7 +129,7 @@ private fun MyListingRow(
             ) {
                 val image = listing.images.firstOrNull()
                 if (image != null) {
-                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl), contentDescription = null, modifier = Modifier.fillMaxSize())
+                    AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                 } else {
                     Icon(Icons.Outlined.Image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

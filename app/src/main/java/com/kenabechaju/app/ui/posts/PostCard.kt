@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +36,7 @@ fun PostCard(post: PostDto, onClick: () -> Unit) {
                 AsyncImage(
                     model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl),
                     contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
                 )
             }
@@ -45,7 +47,7 @@ fun PostCard(post: PostDto, onClick: () -> Unit) {
                         contentAlignment = Alignment.Center,
                     ) {
                         if (post.shop.logoUrl != null) {
-                            AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(post.shop.logoUrl), contentDescription = null, modifier = Modifier.size(24.dp).clip(CircleShape))
+                            AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(post.shop.logoUrl), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(24.dp).clip(CircleShape))
                         } else {
                             Icon(
                                 Icons.Outlined.Storefront,

@@ -1,6 +1,7 @@
 package com.kenabechaju.app.ui.posts
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -65,10 +66,10 @@ fun MyShopPostsScreen(
                     CircularProgressIndicator()
                 }
                 state.error != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.error!!, color = MaterialTheme.colorScheme.error)
+                    Text(state.error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
                 }
                 state.posts.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No posts yet — tap + to post an update", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No posts yet — tap + to post an update", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
                 }
                 else -> LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(state.posts, key = { it.id }) { post ->

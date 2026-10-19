@@ -1,6 +1,7 @@
 package com.kenabechaju.app.ui.chat
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.ui.text.style.TextAlign
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -39,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -130,6 +132,7 @@ fun ChatThreadScreen(
                         AsyncImage(
                             model = com.kenabechaju.app.ui.common.mediaUrl(it),
                             contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier.size(40.dp).aspectRatio(1f).clip(RoundedCornerShape(8.dp)),
                         )
                     }
@@ -149,7 +152,7 @@ fun ChatThreadScreen(
                     CircularProgressIndicator()
                 }
                 state.error != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.error!!, color = MaterialTheme.colorScheme.error)
+                    Text(state.error!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 32.dp), textAlign = TextAlign.Center)
                 }
                 else -> LazyColumn(
                     state = listState,
@@ -180,6 +183,7 @@ private fun MessageBubble(message: MessageDto, isMine: Boolean) {
                 AsyncImage(
                     model = com.kenabechaju.app.ui.common.mediaUrl(it),
                     contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).clip(RoundedCornerShape(8.dp)),
                 )
             }

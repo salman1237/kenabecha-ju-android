@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -104,7 +105,7 @@ fun CreateEditShopScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     state.shop?.coverUrl?.let {
-                        AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, modifier = Modifier.fillMaxSize())
+                        AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                     }
                     if (state.isUploadingCover) {
                         CircularProgressIndicator()
@@ -122,7 +123,7 @@ fun CreateEditShopScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     state.shop?.logoUrl?.let {
-                        AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                        AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(it), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clip(CircleShape))
                     }
                     if (state.isUploadingLogo) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))

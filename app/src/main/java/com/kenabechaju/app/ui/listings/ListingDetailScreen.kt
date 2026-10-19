@@ -51,6 +51,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -437,7 +438,7 @@ private fun SellerRow(listing: ListingDto, onClick: (() -> Unit)?) {
             contentAlignment = Alignment.Center,
         ) {
             if (imageUrl != null) {
-                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(imageUrl), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape))
+                AsyncImage(model = com.kenabechaju.app.ui.common.mediaUrl(imageUrl), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clip(CircleShape))
             } else {
                 Text(
                     (listing.shop?.shopName ?: listing.seller.fullName).take(1).uppercase(),
