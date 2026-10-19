@@ -198,6 +198,18 @@ The web app grew priced options on shop listings (a size, a pack quantity, a wei
 
 ---
 
+## Phase 9 — Chat wasn't actually real-time, and showed the wrong seller (fixed)
+
+User-reported, both confirmed live on the real device: a new message never appeared in the Inbox until leaving and reopening it (a fresh REST fetch), and a buyer messaging a shop listing saw a literal person's name ("Md Sohel Rana") as "the seller" instead of the shop's own identity ("DeshLet-The Meat Codex").
+
+**Real-time**: `ChatSocket` (Phase 3's global `wss://.../ws` connection) was never actually the bug's cause structurally — it has the same single-connection, Redis-fan-out-aware design as the web client and reconnects with backoff on close/failure. The actual defect: the backend pings every open socket every 30s and reaps any socket that goes 90s without a single inbound frame (`ConnectionManager.sweep`, `backend/app/websocket/manager.py`). The web client (`lib/ws/client.ts`) already replies `{"type":"pong"}` on receiving a ping; `ChatSocket.onMessage` never did — it only recognized `message`/`read`/`typing` frames and silently dropped `ping`. So a connection that looked open in the app was actually being reaped and reopened on a ~90s cycle the whole time a user sat on the Inbox, and only a REST-backed navigation (leaving and re-entering) ever picked up what arrived in that gap. Fixed by replying with a pong before frame-type dispatch in `ChatSocket.onMessage`.
+
+**Wrong seller name**: `InboxScreen`'s conversation row and `ChatThreadScreen`'s top bar both rendered `counterparty.fullName` unconditionally — the literal other-side user, with no `is_seller`/`shop` check. `ListingDetailScreen` already had this right (`listing.shop?.shopName ?: listing.seller.fullName`, from Phase 2c) since product listings are shop-aware by construction; chat's `ConversationDto` carries the identical `shop`/`is_seller` fields `ConversationOut` already sends, they just weren't being read. Added `ConversationDto.counterpartyDisplayName` (`is_seller ? counterparty.fullName : shop?.shopName ?: counterparty.fullName`, mirroring the web app's own `displayName` computation in `InboxScreen`/`ChatThreadScreen` field for field) and swapped both call sites to it.
+
+**Verified live on device**: Inbox now shows "DeshLet-The Meat Codex", "Creamo" and "Rupedia" (the actual shop names) in place of personal names across all three real conversations on the test account.
+
+---
+
 ## Phase 7 — Bilingual, branding & release
 
 - **Bangla strings + a real language switch**: `values-bn/strings.xml`, hand-synced against `frontend/messages/bn.ts`; a manual EN/BN toggle in settings (not just following the device's system locale — the web app's own `LanguageContext` is a deliberate manual override too, not a locale-detection shortcut), persisted in DataStore.
