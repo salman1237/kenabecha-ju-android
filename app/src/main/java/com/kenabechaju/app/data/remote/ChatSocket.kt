@@ -105,6 +105,19 @@ class ChatSocket @Inject constructor(private val okHttpClient: OkHttpClient) : D
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            // The server pings every 30s and reaps sockets silent for 90s
+            // (ConnectionManager.sweep) — without a reply, this connection
+            // looked alive but was actually being dropped and reopened on a
+            // ~90s cycle, so most live pushes were lost and only showed up
+            // on the next manual refresh. The web client already answers
+            // this the same way (lib/ws/client.ts).
+            if (runCatching { json.parseToJsonElement(text) }.getOrNull()
+                    .let { it as? JsonObject }
+                    ?.get("type")?.jsonPrimitive?.contentOrNull == "ping"
+            ) {
+                webSocket.send("""{"type":"pong"}""")
+                return
+            }
             runCatching { parseFrame(text) }.getOrNull()?.let { scope.launch { _events.emit(it) } }
         }
 

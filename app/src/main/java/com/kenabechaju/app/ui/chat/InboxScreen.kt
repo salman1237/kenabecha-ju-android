@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.ConversationDto
+import com.kenabechaju.app.data.remote.dto.counterpartyDisplayName
 import com.kenabechaju.app.ui.common.KbCard
 import com.kenabechaju.app.ui.common.KenaBechaTopBar
 
@@ -99,7 +100,7 @@ private fun ConversationRow(convo: ConversationDto, onClick: () -> Unit) {
             }
             Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
                 Text(
-                    convo.counterparty.fullName,
+                    convo.counterpartyDisplayName,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = if (convo.unreadCount > 0) FontWeight.Bold else FontWeight.Normal,
                     ),

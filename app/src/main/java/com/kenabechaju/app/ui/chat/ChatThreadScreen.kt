@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kenabechaju.app.data.remote.dto.MessageDto
+import com.kenabechaju.app.data.remote.dto.counterpartyDisplayName
 import com.kenabechaju.app.ui.common.KenaBechaTopBar
 import com.kenabechaju.app.ui.common.formatPrice
 
@@ -70,7 +71,7 @@ fun ChatThreadScreen(
 
     Scaffold(
         topBar = {
-            KenaBechaTopBar(title = state.conversation?.counterparty?.fullName ?: "Chat", onBack = onBack)
+            KenaBechaTopBar(title = state.conversation?.counterpartyDisplayName ?: "Chat", onBack = onBack)
         },
         bottomBar = {
             // Edge-to-edge (MainActivity's enableEdgeToEdge) means this row

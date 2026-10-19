@@ -45,3 +45,12 @@ data class ConversationDto(
 
 @Serializable
 data class SendMessageRequestDto(val content: String)
+
+/** The name to show for the other side of this conversation. A seller
+ *  viewing their own thread sees the buyer's real name (buyers have no
+ *  shop identity); a buyer sees the shop's name when the listing belongs
+ *  to one, not the literal team member who happens to be the seller-side
+ *  user — mirrors the web app's identical `displayName` computation in
+ *  InboxScreen/ChatThreadScreen. */
+val ConversationDto.counterpartyDisplayName: String
+    get() = if (isSeller) counterparty.fullName else shop?.shopName ?: counterparty.fullName
