@@ -17,6 +17,7 @@ import com.kenabechaju.app.data.remote.dto.DepartmentDto
 import com.kenabechaju.app.data.remote.dto.ForgotPasswordRequestDto
 import com.kenabechaju.app.data.remote.dto.GoogleLoginRequestDto
 import com.kenabechaju.app.data.remote.dto.HallDto
+import com.kenabechaju.app.data.remote.dto.ImageOrderRequestDto
 import com.kenabechaju.app.data.remote.dto.ListingCreateRequestDto
 import com.kenabechaju.app.data.remote.dto.ListingDto
 import com.kenabechaju.app.data.remote.dto.ListingImageDto
@@ -177,6 +178,9 @@ interface ApiService {
 
     @retrofit2.http.DELETE("listings/{id}/images/{imageId}")
     suspend fun deleteListingImage(@Path("id") id: String, @Path("imageId") imageId: String)
+
+    @POST("listings/{id}/images/reorder")
+    suspend fun reorderListingImages(@Path("id") id: String, @Body payload: ImageOrderRequestDto): ListingDto
 
     @GET("dashboard/stats")
     suspend fun getDashboardStats(): DashboardStatsDto

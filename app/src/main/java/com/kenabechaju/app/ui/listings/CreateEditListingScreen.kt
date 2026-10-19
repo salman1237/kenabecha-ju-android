@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -21,9 +22,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Checkbox
@@ -75,13 +79,42 @@ fun CreateEditListingScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    // Up to 8 at once, matching the web form's own cap — previously a
+    // single-image picker, so attaching several photos meant repeating the
+    // whole pick-and-upload round trip once per photo.
     val photoPicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia(),
-    ) { uri -> uri?.let(viewModel::uploadPhoto) }
+        ActivityResultContracts.PickMultipleVisualMedia(maxItems = 8),
+    ) { uris -> viewModel.uploadPhotos(uris) }
 
     Scaffold(
         topBar = {
             KenaBechaTopBar(title = if (state.isEditing) "Edit listing" else "New listing", onBack = onBack)
+        },
+        // Pinned instead of scrolling away with the rest of the form —
+        // on a long listing (options + several photos) the old submit
+        // button could be several screens below the fold.
+        bottomBar = {
+            androidx.compose.material3.Surface(shadowElevation = 8.dp) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    state.error?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(bottom = 8.dp))
+                    }
+                    if (state.saved) {
+                        Text(
+                            if (state.isEditing) "Saved" else "Listing created — add some photos below",
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                    }
+                    Button(
+                        onClick = viewModel::submit,
+                        enabled = !state.isSaving,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(if (state.isSaving) "Saving…" else if (state.isEditing) "Save changes" else "Create listing")
+                    }
+                }
+            }
         },
     ) { padding ->
         Column(
@@ -91,6 +124,7 @@ fun CreateEditListingScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
+            FormSectionHeader("Basics")
             OutlinedTextField(
                 value = state.title,
                 onValueChange = { v -> viewModel.update { it.copy(title = v) } },
@@ -119,6 +153,7 @@ fun CreateEditListingScreen(
                 Spacer(Modifier.height(10.dp))
             }
 
+            FormSectionHeader("Pricing")
             // Options are shop inventory only; a personal listing keeps the
             // single price it has always had.
             if (state.isShopListing) {
@@ -217,6 +252,7 @@ fun CreateEditListingScreen(
                 Spacer(Modifier.height(10.dp))
             }
 
+            FormSectionHeader("Category & tags")
             // Condition isn't a meaningful concept for shop inventory (a
             // shop's stock isn't "used" or "like new" the way a personal
             // listing is) — web hides this field for shop listings for the
@@ -295,15 +331,19 @@ fun CreateEditListingScreen(
                 Spacer(Modifier.height(10.dp))
             }
 
-            OutlinedTextField(
-                value = state.tagsText,
-                onValueChange = { v -> viewModel.update { it.copy(tagsText = v) } },
-                label = { Text("Tags (comma separated)") },
-                singleLine = true,
+            // state.tagsText stays the single source of truth (what submit
+            // already parses) -- TagInput only changes how it's edited,
+            // chip-by-chip instead of hand-typed commas.
+            com.kenabechaju.app.ui.common.TagInput(
+                tags = remember(state.tagsText) {
+                    state.tagsText.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                },
+                onTagsChange = { tags -> viewModel.update { it.copy(tagsText = tags.joinToString(", ")) } },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
 
+            FormSectionHeader("Fulfillment")
             LabeledDropdown(
                 label = "Fulfillment",
                 options = FULFILLMENT_TYPES,
@@ -322,55 +362,65 @@ fun CreateEditListingScreen(
                 )
             }
 
-            state.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 12.dp))
-            }
-            if (state.saved) {
-                Text(
-                    if (state.isEditing) "Saved" else "Listing created — add some photos below",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
-
-            Button(
-                onClick = viewModel::submit,
-                enabled = !state.isSaving,
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-            ) {
-                Text(if (state.isSaving) "Saving…" else if (state.isEditing) "Save changes" else "Create listing")
-            }
-
             if (state.listingId != null) {
-                Text(
+                FormSectionHeader(
                     "Photos",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+                    hint = if (!state.isEditing) "Listing created — add some below" else null,
                 )
+                // The first tile is the cover shown everywhere else in the
+                // app (browse grid, shop storefront) -- left/right move the
+                // whole order one step, "make cover" jumps straight to
+                // first. Previously there was no way to reorder at all once
+                // more than one photo was uploaded.
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(state.images, key = { it.id }) { image ->
-                        Box(modifier = Modifier.size(80.dp)) {
-                            AsyncImage(
-                                model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
-                            )
-                            IconButton(
-                                onClick = { viewModel.deletePhoto(image.id) },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .size(24.dp)
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f), CircleShape),
-                            ) {
-                                Icon(Icons.Filled.Close, contentDescription = "Remove photo", modifier = Modifier.size(14.dp))
+                        val index = state.images.indexOf(image)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(96.dp)) {
+                            Box(modifier = Modifier.size(96.dp)) {
+                                AsyncImage(
+                                    model = com.kenabechaju.app.ui.common.mediaUrl(image.imageUrl),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                                )
+                                IconButton(
+                                    onClick = { viewModel.deletePhoto(image.id) },
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .size(24.dp)
+                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f), CircleShape),
+                                ) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Remove photo", modifier = Modifier.size(14.dp))
+                                }
+                                if (index == 0) {
+                                    Text(
+                                        "Cover",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(bottomStart = 8.dp, topEnd = 6.dp))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                                    )
+                                }
+                            }
+                            Row {
+                                IconButton(onClick = { viewModel.movePhoto(image.id, -1) }, enabled = index > 0, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Move earlier", modifier = Modifier.size(16.dp))
+                                }
+                                IconButton(onClick = { viewModel.makeCoverPhoto(image.id) }, enabled = index != 0, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Filled.Star, contentDescription = "Make cover photo", modifier = Modifier.size(16.dp))
+                                }
+                                IconButton(onClick = { viewModel.movePhoto(image.id, 1) }, enabled = index < state.images.lastIndex, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Move later", modifier = Modifier.size(16.dp))
+                                }
                             }
                         }
                     }
                     item {
                         Box(
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(96.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center,
@@ -381,13 +431,23 @@ fun CreateEditListingScreen(
                                 IconButton(onClick = {
                                     photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                                 }) {
-                                    Icon(Icons.Filled.AddAPhoto, contentDescription = "Add photo")
+                                    Icon(Icons.Filled.AddAPhoto, contentDescription = "Add photos")
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FormSectionHeader(title: String, hint: String? = null) {
+    Column(modifier = Modifier.padding(top = 18.dp, bottom = 8.dp)) {
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        hint?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
         }
     }
 }

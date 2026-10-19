@@ -32,6 +32,11 @@ data class ListingCreateRequestDto(
     val variants: List<ListingVariantRequestDto>? = null,
 )
 
+/** Mirrors `ListingImageOrderIn` — every image id on the listing, in the
+ *  order they should appear; the first becomes the cover. */
+@Serializable
+data class ImageOrderRequestDto(@SerialName("image_ids") val imageIds: List<String>)
+
 /** Mirrors `ListingUpdate` — every field optional, only what's sent changes. */
 @Serializable
 data class ListingUpdateRequestDto(

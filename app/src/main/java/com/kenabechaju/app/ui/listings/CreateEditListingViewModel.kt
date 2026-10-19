@@ -236,17 +236,26 @@ class CreateEditListingViewModel @Inject constructor(
         }
     }
 
-    fun uploadPhoto(uri: Uri) {
+    fun uploadPhoto(uri: Uri) = uploadPhotos(listOf(uri))
+
+    /** Uploads sequentially, not in parallel -- each one appends to
+     *  `images` as it finishes, so the gallery fills in one at a time
+     *  rather than racing several uploads against the same mutable list. */
+    fun uploadPhotos(uris: List<Uri>) {
         val id = _state.value.listingId ?: return
+        if (uris.isEmpty()) return
         _state.value = _state.value.copy(isUploadingPhoto = true, error = null)
         viewModelScope.launch {
-            when (val result = listingRepository.uploadListingImage(id, uri)) {
-                is AuthResult.Success -> _state.value = _state.value.copy(
-                    isUploadingPhoto = false,
-                    images = _state.value.images + result.value,
-                )
-                is AuthResult.Failure -> _state.value = _state.value.copy(isUploadingPhoto = false, error = result.error.message)
+            for (uri in uris) {
+                when (val result = listingRepository.uploadListingImage(id, uri)) {
+                    is AuthResult.Success -> _state.value = _state.value.copy(images = _state.value.images + result.value)
+                    is AuthResult.Failure -> {
+                        _state.value = _state.value.copy(isUploadingPhoto = false, error = result.error.message)
+                        return@launch
+                    }
+                }
             }
+            _state.value = _state.value.copy(isUploadingPhoto = false)
         }
     }
 
@@ -258,6 +267,42 @@ class CreateEditListingViewModel @Inject constructor(
             when (val result = listingRepository.deleteListingImage(id, imageId)) {
                 is AuthResult.Failure -> _state.value = _state.value.copy(images = previous, error = result.error.message)
                 is AuthResult.Success -> Unit
+            }
+        }
+    }
+
+    /** Swaps a photo with its neighbor in [direction] (-1 left/earlier, +1
+     *  right/later) and persists the new order. Optimistic like delete
+     *  above, reverted if the server call fails. */
+    fun movePhoto(imageId: String, direction: Int) {
+        val id = _state.value.listingId ?: return
+        val previous = _state.value.images
+        val index = previous.indexOfFirst { it.id == imageId }
+        val target = index + direction
+        if (index < 0 || target !in previous.indices) return
+        val reordered = previous.toMutableList().apply { add(target, removeAt(index)) }
+        _state.value = _state.value.copy(images = reordered)
+        viewModelScope.launch {
+            when (val result = listingRepository.reorderListingImages(id, reordered.map { it.id })) {
+                is AuthResult.Success -> _state.value = _state.value.copy(images = result.value.images)
+                is AuthResult.Failure -> _state.value = _state.value.copy(images = previous, error = result.error.message)
+            }
+        }
+    }
+
+    /** Moves a photo to the front -- the cover is simply whichever image
+     *  sorts first, so "make cover" is reorder's one-step special case
+     *  rather than a separate backend concept. */
+    fun makeCoverPhoto(imageId: String) {
+        val id = _state.value.listingId ?: return
+        val previous = _state.value.images
+        val image = previous.find { it.id == imageId } ?: return
+        val reordered = listOf(image) + previous.filter { it.id != imageId }
+        _state.value = _state.value.copy(images = reordered)
+        viewModelScope.launch {
+            when (val result = listingRepository.reorderListingImages(id, reordered.map { it.id })) {
+                is AuthResult.Success -> _state.value = _state.value.copy(images = result.value.images)
+                is AuthResult.Failure -> _state.value = _state.value.copy(images = previous, error = result.error.message)
             }
         }
     }

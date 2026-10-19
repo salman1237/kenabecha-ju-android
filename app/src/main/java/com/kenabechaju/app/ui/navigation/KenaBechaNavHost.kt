@@ -235,7 +235,9 @@ fun KenaBechaNavHost(authRepository: AuthRepository, pendingLinkUrl: String? = n
             MyShopsScreen(
                 onBack = { navController.popBackStack() },
                 onCreateShop = { navController.navigate(Routes.CREATE_SHOP) },
+                onOpenStorefront = { slug -> navController.navigate(Routes.shopStorefront(slug)) },
                 onEditShop = { id -> navController.navigate(Routes.editShop(id)) },
+                onManageListings = { id -> navController.navigate(Routes.myListingsForShop(id)) },
                 onManagePosts = { id -> navController.navigate(Routes.myShopPosts(id)) },
             )
         }
@@ -268,7 +270,10 @@ fun KenaBechaNavHost(authRepository: AuthRepository, pendingLinkUrl: String? = n
         ) {
             PublicProfileScreen(onBack = { navController.popBackStack() })
         }
-        composable(Routes.MY_LISTINGS) {
+        composable(
+            route = Routes.MY_LISTINGS,
+            arguments = listOf(navArgument("shopId") { type = NavType.StringType; nullable = true; defaultValue = null }),
+        ) {
             MyListingsScreen(
                 onBack = { navController.popBackStack() },
                 onCreateListing = { navController.navigate(Routes.CREATE_LISTING) },
@@ -289,7 +294,7 @@ fun KenaBechaNavHost(authRepository: AuthRepository, pendingLinkUrl: String? = n
                     navController.navigate(Routes.LOGIN) { popUpTo(0) }
                 },
                 onDashboard = { navController.navigate(Routes.DASHBOARD) },
-                onMyListings = { navController.navigate(Routes.MY_LISTINGS) },
+                onMyListings = { navController.navigate(Routes.ALL_MY_LISTINGS) },
                 onInbox = { navController.navigate(Routes.INBOX) },
                 onNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
             )

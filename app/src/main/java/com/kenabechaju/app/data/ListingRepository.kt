@@ -172,6 +172,10 @@ class ListingRepository @Inject constructor(
     suspend fun deleteListingImage(listingId: String, imageId: String): AuthResult<Unit> = resultOf {
         api.deleteListingImage(listingId, imageId)
     }
+
+    suspend fun reorderListingImages(listingId: String, imageIds: List<String>): AuthResult<ListingDto> = resultOf {
+        api.reorderListingImages(listingId, com.kenabechaju.app.data.remote.dto.ImageOrderRequestDto(imageIds))
+    }
 }
 
 private suspend fun <T> resultOf(block: suspend () -> T): AuthResult<T> = try {

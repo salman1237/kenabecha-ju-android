@@ -12,7 +12,7 @@ object Routes {
     const val ACCOUNT_SETTINGS = "account_settings"
     const val COMPLETE_PROFILE = "complete_profile"
     const val LISTING_DETAIL = "listing/{listingId}"
-    const val MY_LISTINGS = "my_listings"
+    const val MY_LISTINGS = "my_listings?shopId={shopId}"
     const val LISTING_FORM = "listing_form?listingId={listingId}"
     const val DASHBOARD = "dashboard"
     const val SAVED_LISTINGS = "saved_listings"
@@ -41,6 +41,11 @@ object Routes {
     // listingId resolved to the string "{listingId}", not null).
     const val CREATE_LISTING = "listing_form"
     fun editListing(listingId: String) = "listing_form?listingId=$listingId"
+    // Bare path with no shopId -- same reasoning as CREATE_LISTING above:
+    // the "all my listings" entry point from Account Settings must never
+    // send the literal unsubstituted "{shopId}" text as the argument.
+    const val ALL_MY_LISTINGS = "my_listings"
+    fun myListingsForShop(shopId: String) = "my_listings?shopId=$shopId"
     fun publicProfile(userId: String) = "profile/$userId"
     fun shopStorefront(slug: String) = "shop/$slug"
     const val CREATE_SHOP = "shop_form"

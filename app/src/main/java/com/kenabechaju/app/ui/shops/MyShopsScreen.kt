@@ -15,6 +15,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +48,9 @@ import com.kenabechaju.app.ui.common.KenaBechaTopBar
 fun MyShopsScreen(
     onBack: () -> Unit,
     onCreateShop: () -> Unit,
+    onOpenStorefront: (String) -> Unit,
     onEditShop: (String) -> Unit,
+    onManageListings: (String) -> Unit,
     onManagePosts: (String) -> Unit,
     viewModel: MyShopsViewModel = hiltViewModel(),
 ) {
@@ -80,7 +85,13 @@ fun MyShopsScreen(
                 }
                 else -> LazyColumn(contentPadding = PaddingValues(16.dp)) {
                     items(state.shops, key = { it.id }) { shop ->
-                        ShopRow(shop, onClick = { onEditShop(shop.id) }, onManagePosts = { onManagePosts(shop.id) })
+                        ShopRow(
+                            shop,
+                            onClick = { onOpenStorefront(shop.slug) },
+                            onEdit = { onEditShop(shop.id) },
+                            onManageListings = { onManageListings(shop.id) },
+                            onManagePosts = { onManagePosts(shop.id) },
+                        )
                     }
                 }
             }
@@ -88,13 +99,27 @@ fun MyShopsScreen(
     }
 }
 
+/** Tapping the row itself opens the public storefront -- the same "what a
+ *  buyer sees" view a shop owner actually wants to check most often -- not
+ *  the edit form, which now needs its own explicit icon button since it no
+ *  longer doubles as the row's default action. Listings/Posts are two
+ *  separate, equally-weighted management shortcuts rather than Posts alone:
+ *  a shop's day-to-day work is split between its inventory and its
+ *  announcements, and only one of those was reachable from here before. */
 @Composable
-private fun ShopRow(shop: ShopDto, onClick: () -> Unit, onManagePosts: () -> Unit) {
+private fun ShopRow(
+    shop: ShopDto,
+    onClick: () -> Unit,
+    onEdit: () -> Unit,
+    onManageListings: () -> Unit,
+    onManagePosts: () -> Unit,
+) {
     KbCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
     ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.padding(12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
@@ -113,9 +138,22 @@ private fun ShopRow(shop: ShopDto, onClick: () -> Unit, onManagePosts: () -> Uni
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Filled.Edit, contentDescription = "Edit shop", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
+            androidx.compose.material3.TextButton(onClick = onManageListings) {
+                Icon(Icons.Filled.Inventory2, contentDescription = null, modifier = Modifier.size(18.dp))
+                androidx.compose.foundation.layout.Spacer(Modifier.size(6.dp))
+                Text("Listings")
+            }
             androidx.compose.material3.TextButton(onClick = onManagePosts) {
+                Icon(Icons.Filled.Campaign, contentDescription = null, modifier = Modifier.size(18.dp))
+                androidx.compose.foundation.layout.Spacer(Modifier.size(6.dp))
                 Text("Posts")
             }
+        }
         }
     }
 }

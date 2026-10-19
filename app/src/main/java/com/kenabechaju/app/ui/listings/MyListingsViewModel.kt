@@ -1,5 +1,6 @@
 package com.kenabechaju.app.ui.listings
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kenabechaju.app.data.AuthResult
@@ -27,7 +28,14 @@ data class MyListingsUiState(
 @HiltViewModel
 class MyListingsViewModel @Inject constructor(
     private val listingRepository: ListingRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    // Absent entirely -> "all my listings" (Account Settings' own entry
+    // point); set -> this one shop's inventory only (My Shops' new
+    // "Listings" button), reusing ListingRepository.myListings' existing
+    // optional shopId param rather than a second repository method.
+    private val shopId: String? = savedStateHandle.get<String>("shopId")?.takeIf { it.isNotBlank() }
+
     private val _state = MutableStateFlow(MyListingsUiState())
     val state: StateFlow<MyListingsUiState> = _state.asStateFlow()
 
@@ -38,7 +46,7 @@ class MyListingsViewModel @Inject constructor(
     fun refresh() {
         _state.value = _state.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
-            when (val result = listingRepository.myListings()) {
+            when (val result = listingRepository.myListings(shopId)) {
                 is AuthResult.Success -> _state.value = _state.value.copy(isLoading = false, listings = result.value)
                 is AuthResult.Failure -> _state.value = _state.value.copy(isLoading = false, error = result.error.message)
             }
