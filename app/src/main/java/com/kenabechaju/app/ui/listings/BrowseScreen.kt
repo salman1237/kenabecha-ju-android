@@ -23,9 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -62,8 +60,6 @@ private val SORT_OPTIONS = listOf(
 @Composable
 fun BrowseScreen(
     onListingClick: (String) -> Unit,
-    onAccountClick: () -> Unit,
-    onBrowseShopsClick: () -> Unit,
     onPostsClick: () -> Unit,
     onAssistantClick: () -> Unit,
     viewModel: BrowseViewModel = hiltViewModel(),
@@ -91,16 +87,11 @@ fun BrowseScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 GradientText("KenaBecha JU", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold))
-                Row {
-                    androidx.compose.material3.IconButton(onClick = onBrowseShopsClick) {
-                        Icon(Icons.Outlined.Storefront, contentDescription = "Shops", tint = MaterialTheme.colorScheme.tertiary)
-                    }
-                    androidx.compose.material3.IconButton(onClick = onPostsClick) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Posts", tint = MaterialTheme.colorScheme.primary)
-                    }
-                    androidx.compose.material3.IconButton(onClick = onAccountClick) {
-                        Icon(Icons.Filled.AccountCircle, contentDescription = "Account", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                // Shops and Account moved to the bottom nav bar (see
+                // KenaBechaNavHost) -- Posts stays here since it isn't one
+                // of the five bottom-nav destinations.
+                androidx.compose.material3.IconButton(onClick = onPostsClick) {
+                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Posts", tint = MaterialTheme.colorScheme.primary)
                 }
             }
 

@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kenabechaju.app.data.AuthRepository
@@ -74,7 +77,43 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         return
     }
 
-    NavHost(navController = navController, startDestination = startDestination!!) {
+    // Only the five top-level destinations in BOTTOM_NAV_ROUTES show the
+    // bar; everything drilled into from one of them (detail screens,
+    // forms, chat threads) hides it, and auth screens never reach here
+    // since startDestination already resolved past them.
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val bottomNavViewModel: BottomNavViewModel = hiltViewModel()
+    val unreadCount by bottomNavViewModel.unreadCount.collectAsState()
+
+    Scaffold(
+        bottomBar = {
+            if (currentRoute in BOTTOM_NAV_ROUTES) {
+                KenaBechaBottomBar(
+                    currentRoute = currentRoute,
+                    unreadCount = unreadCount,
+                    onNavigate = { route ->
+                        if (route == Routes.CREATE_LISTING) {
+                            // An action, not a tab to land on and return to
+                            // — no saved/restored state the way the other
+                            // four persist their own scroll position.
+                            navController.navigate(route)
+                        } else {
+                            navController.navigate(route) {
+                                popUpTo(Routes.HOME) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    },
+                )
+            }
+        },
+    ) { innerPadding ->
+    NavHost(
+        navController = navController,
+        startDestination = startDestination!!,
+        modifier = Modifier.padding(innerPadding),
+    ) {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoggedIn = {
@@ -107,8 +146,6 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         composable(Routes.HOME) {
             BrowseScreen(
                 onListingClick = { id -> navController.navigate(Routes.listingDetail(id)) },
-                onAccountClick = { navController.navigate(Routes.ACCOUNT_SETTINGS) },
-                onBrowseShopsClick = { navController.navigate(Routes.BROWSE_SHOPS) },
                 onPostsClick = { navController.navigate(Routes.POSTS_FEED) },
                 onAssistantClick = { navController.navigate(Routes.ASSISTANT) },
             )
@@ -266,5 +303,6 @@ fun KenaBechaNavHost(authRepository: AuthRepository) {
         composable(Routes.NOTIFICATIONS) {
             NotificationsScreen(onBack = { navController.popBackStack() })
         }
+    }
     }
 }
