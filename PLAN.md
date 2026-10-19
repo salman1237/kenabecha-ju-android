@@ -210,6 +210,18 @@ User-reported, both confirmed live on the real device: a new message never appea
 
 ---
 
+## Phase 10 — Push notifications never showed while the app was open (fixed)
+
+User-reported ("why no push notification on mobile app"), diagnosed by testing the real push path end to end against production rather than guessing: a device token was already correctly registered (`device_tokens` table had a current row), the server's `push_service.send_push_to_tokens` call to Firebase already succeeded with no error — yet nothing ever appeared on the phone. Backgrounding the app and re-sending the exact same server-side call *did* show a system notification (FCM's own auto-display, via the manifest's `default_notification_channel_id`), isolating the bug precisely to the foreground case.
+
+`KenaBechaMessagingService` never overrode `onMessageReceived`, on the explicit (and wrong) assumption from Phase 3 that a foregrounded app doesn't need a system notification since the same event already arrives live over the chat WebSocket. The flaw: "foregrounded" only means *some* screen of the app is open, not that the user is looking at the one screen that event is relevant to — so every push that arrived while the app was simply open on Browse, Dashboard, or anywhere else was silently dropped with nothing shown at all, no log, no crash.
+
+Fixed by implementing `onMessageReceived` to build and show the notification itself — same channel (`default`), same launcher icon, same tap-to-open action as the auto-display path, so foreground and background now behave identically from the user's side. Guards the Android 13+ `POST_NOTIFICATIONS` check before posting (consistent with the Phase 6 UI-redesign era's existing runtime-permission request in `MainActivity`). Deep-linking to the exact conversation/listing from a tap isn't implemented on either path yet — a real, disclosed gap, not silently different between the two paths.
+
+**Verified live end to end against production**: confirmed a real registered token, confirmed the server's FCM call succeeds, confirmed background auto-display already worked before touching any code, then confirmed the fix — the exact same server-side push call now shows "Test push (foreground, after fix)" in the notification shade with the app open on the Browse screen.
+
+---
+
 ## Phase 7 — Bilingual, branding & release
 
 - **Bangla strings + a real language switch**: `values-bn/strings.xml`, hand-synced against `frontend/messages/bn.ts`; a manual EN/BN toggle in settings (not just following the device's system locale — the web app's own `LanguageContext` is a deliberate manual override too, not a locale-detection shortcut), persisted in DataStore.
